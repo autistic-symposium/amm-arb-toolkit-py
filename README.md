@@ -1,9 +1,9 @@
-# 🪙✨ bDEX
+# 🪙✨ bdex
 
 <br>
 
 
-### A package and CLI tool for making API calls to get data and arbitrage for specified tokens/exchange pools.
+### A package and CLI tool to get data and arbitrage for specified tokens/exchange pools.
 
 <br>
 
@@ -45,7 +45,7 @@ source venv/bin/activate
 Install dependencies:
 
 ```
-pip3 -r requirements.txt
+make install_deps
 ```
 
 Install the CLI:
@@ -68,17 +68,30 @@ You can run the CLI with:
 bdex
 ```
 
+<br>
+
+<img width="865" alt="Screen Shot 2022-03-31 at 10 30 50 PM" src="https://user-images.githubusercontent.com/1130416/161125216-10ec233f-0f64-48eb-8d1a-15e90d433266.png">
+
+<br>
+
 ### Checking the latest block
 
-To connect to Ethereum and get the latest block, run:
+
+We leverage [Alchemy API endpoint `eth_blockNumber_hex`](https://docs.alchemy.com/alchemy/apis/ethereum/eth_blockNumber_hex) to get the latest block:
 
 ```
 bdex -c
 ```
 
+<br>
+
 <img width="406" alt="Screen Shot 2022-03-31 at 1 15 25 PM" src="https://user-images.githubusercontent.com/1130416/161032451-685dee8b-8ed3-40c2-9391-191fa2abce35.png">
 
+<br>
+
 The block number can be checked against [ETHstat](https://ethstats.net/).
+
+<br>
 
 <img width="293" alt="Screen Shot 2022-03-31 at 1 15 19 PM" src="https://user-images.githubusercontent.com/1130416/161032358-86969275-7a72-406d-93bc-73906303a0cb.png">
 
@@ -88,13 +101,14 @@ The block number can be checked against [ETHstat](https://ethstats.net/).
 
 ### Getting the token balance for an exchange
 
-We use [Alchemy API endpoint `eth_call`](https://docs.alchemy.com/alchemy/apis/ethereum/eth_call) to retrieve the current token balance for an specific exchange:
+We leverage [Alchemy API endpoint `eth_call`](https://docs.alchemy.com/alchemy/apis/ethereum/eth_call) to retrieve the current token balance for an specific exchange:
 
 ```
-bdex-b dai uniswap
+bdex -b dai uniswap
 ```
+<br>
 
-<img width="492" alt="Screen Shot 2022-03-31 at 1 14 24 PM" src="https://user-images.githubusercontent.com/1130416/161032288-28d3d980-ff54-45f2-9355-32d41f189ac6.png"> 
+<img width="481" alt="Screen Shot 2022-03-31 at 10 26 21 PM" src="https://user-images.githubusercontent.com/1130416/161125262-4a623e23-adc9-4928-98c5-16dd67d3302b.png">
 
 
 
@@ -109,72 +123,124 @@ bdex-b dai uniswap
 bdex -a
 ```
 
-<img width="399" alt="Screen Shot 2022-03-31 at 3 06 44 PM" src="https://user-images.githubusercontent.com/1130416/161041695-68dbcb58-40af-48ac-8542-d668bd67f2cb.png">
+<br>
+
+<img width="407" alt="Screen Shot 2022-03-31 at 10 26 51 PM" src="https://user-images.githubusercontent.com/1130416/161125283-9a320c9b-a89b-4efa-832e-e0c315e2adf6.png">
+
+
 
 
 <br>
 
 
-### [Extra] Getting all token balances for all the exchanges with the web3 lib
+### [Extra] Getting all token balances for all the exchanges with the web3 Python library
 
 To be able to compare our results from the previous steps, we implemented an alternative way to fetch pair balances utilizing the [Python web3 library](https://web3py.readthedocs.io/en/stable/):
 
 ```
 bdex -w
 ```
+<br>
 
-<img width="390" alt="Screen Shot 2022-03-31 at 3 07 03 PM" src="https://user-images.githubusercontent.com/1130416/161041712-fb641492-27a3-4d00-b4b0-7b8a6f8021b8.png">
+<img width="401" alt="Screen Shot 2022-03-31 at 10 27 25 PM" src="https://user-images.githubusercontent.com/1130416/161125363-ced644b9-8011-4f9f-b470-324e5f7e4079.png">
 
 
+<br>
+
+For this library, it's necessary to supply the contracts' ABI (in our case, for [DAI](https://api.etherscan.io/api?module=contract&action=getabi&address=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2) and [WETH](https://api.etherscan.io/api?module=contract&action=getabi&address=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2) - located at `./docs`)
 
 
-Note that for utilize this library we had to retrieve the contract ABI for [DAI](https://api.etherscan.io/api?module=contract&action=getabi&address=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2) and [WETH](https://api.etherscan.io/api?module=contract&action=getabi&address=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2) (located at `./docs`)
-
+Note that a third option to verify token balances is through [Etherscan tokenholdings dashboard](https://etherscan.io/tokenholdings?a=0xa478c2975ab1ea89e8196811f51a7b7ade33eb11).
 
 
 <br>
 
 
-### Getting raw pair prices across all the exchanges
+### Getting trading prices for all the exchanges
 
-To get the current price for ETH/DAI in all the exchanges (as showed in [their dashboards](https://v2.info.uniswap.org/pair/0xa478c2975ab1ea89e8196811f51a7b7ade33eb11), run:
+To get the current price for ETH/DAI in all the exchanges (e.g., as showed in [the projects' dashboards](https://v2.info.uniswap.org/pair/0xa478c2975ab1ea89e8196811f51a7b7ade33eb11)), run:
 
 
 ```
-bdex -p  dai eth
+bdex -p weth eth 10
 ```
 
-<img width="484" alt="Screen Shot 2022-03-31 at 3 28 49 PM" src="https://user-images.githubusercontent.com/1130416/161045235-b29242d5-e32e-4865-8e6a-13b3d113adca.png">
+<br>
+
+<img width="484" alt="Screen Shot 2022-03-31 at 10 28 33 PM" src="https://user-images.githubusercontent.com/1130416/161125333-710dc123-206c-488c-9369-7992481f0e4f.png">
 
 
+#### How the price is calculated
 
-Note that all the exchanges are forks from Uniswap, using the same price formula for trading on UniswapV2:
+All the exchanges are forks from [UniswapV2](https://uniswap.org/blog/uniswap-v2), so they all use the same price formula for trading:
 
  ```
- t1 * t2 = p
+price = balance_token1 * balance_token2 = constant
  ```
+
+TODO: add info on selling/buying price
+
 
 <br>
 
-
-### Getting buying and selling prices for all the exchanges
-
-TO BE ADDED (working on)
-
-
-<br>
 
 ### Getting arbitrage
 
-TO BE ADDED (working on)
+To run the algorithm to search for arbitrage in the supported exchanges, run:
 
+```
+bdex -x
+```
+
+<br>
+
+<img width="509" alt="Screen Shot 2022-03-31 at 10 29 21 PM" src="https://user-images.githubusercontent.com/1130416/161125421-524d1f9c-f4ca-4c60-91ea-4a26062c040f.png">
+
+<br>
+
+TODO: explain how the algorithm works
 
 <br>
 
 ### Running Docker container with arbritage script
 
-TO BE ADDED (working on)
+To run the arbitrage algorithm for a certain amount of minutes MIN, run:
 
+```
+bdex -r MIN
+```
+
+<br>
+
+<img width="434" alt="Screen Shot 2022-03-31 at 10 30 06 PM" src="https://user-images.githubusercontent.com/1130416/161125459-b5e17e3a-4e24-43d7-81ba-4c911a1d6c7d.png">
+
+<br>
+
+Results will be saved into files names `results/<TIME_SAVED>.txt`.
+
+#### Running in docker
+
+To run the algorithm in a separated container, first [install Docker]().
+
+Then build the Docker image:
+
+```
+docker build -t bdex .
+```
+
+Finally, run the container:
+
+```
+docker run -d bdex
+```
+
+Results will be also be available into files names `results/<TIME_SAVED>.txt`. 
+
+You can inspect your container at any time with:
+
+```
+docker ps
+```
 
 ---
 
@@ -182,7 +248,14 @@ TO BE ADDED (working on)
 
 ## Development
 
-### Running the linter
+
+Install dependencies:
+
+```
+pip3 -r requirements-dev.txt
+```
+
+### Linting
 
 ```
 make lint

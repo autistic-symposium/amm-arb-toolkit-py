@@ -7,7 +7,9 @@ from web3 import Web3
 from pathlib import Path
 from dotenv import load_dotenv
 
-from api.util import hex_to_int, wei_to_eth, send_request, craft_url, open_abi
+from api.util import hex_to_int, wei_to_eth, send_request, \
+                        craft_url, open_abi, format_price, \
+                        save_results, format_path, format_filename
 
 
 class ArbritageAPI(object):
@@ -15,22 +17,27 @@ class ArbritageAPI(object):
     def __init__(self) -> None:
 
         self.tokens_address = {
-            'weth': '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-            'dai': '0x6b175474e89094c44da98b954eedeac495271d0f'
+            'WETH': '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+            'DAI': '0x6b175474e89094c44da98b954eedeac495271d0f'
         }
         self.exchanges_address = {
-            'uniswap': '0xa478c2975ab1ea89e8196811f51a7b7ade33eb11',
-            'sushiswap': '0xc3d03e4f041fd4cd388c549ee2a29a9e5075882f',
-            'shebaswap': '0x8faf958e36c6970497386118030e6297fff8d275',
-            'sakeswap': '0x2ad95483ac838e2884563ad278e933fba96bc242',
-            'croswap': '0x60a26d69263ef43e9a68964ba141263f19d71d51'
+            'UNISWAP': '0xa478c2975ab1ea89e8196811f51a7b7ade33eb11',
+            'SUSHISWAP': '0xc3d03e4f041fd4cd388c549ee2a29a9e5075882f',
+            'SHEBASWAP': '0x8faf958e36c6970497386118030e6297fff8d275',
+            'SAKESWAP': '0x2ad95483ac838e2884563ad278e933fba96bc242',
+            'CROSWAP': '0x60a26d69263ef43e9a68964ba141263f19d71d51'
         }
 
         self.current_balances = {}
         self.current_balances_web3 = {}
         self.current_prices = {}
+        self.arbitrage_result = []
         self.provider_url = None
         self.w3_obj = None
+        self.result_dir = None
+        self.run_time = 0
+        self.trading_qty = 0
+        self.arbitrage_threshold = 0
 
         self._load_config()
 
@@ -40,11 +47,33 @@ class ArbritageAPI(object):
 
         ALCHEMY_API_KEY = os.getenv("ALCHEMY_API_KEY")
         ALCHEMY_URL = os.getenv("ALCHEMY_URL")
+        TRADING_QTY = os.getenv("TRADING_QTY")
+        ARBITRAGE_THRESHOLD = os.getenv("ARBITRAGE_THRESHOLD")
+        RESULT_DIR = os.getenv("RESULT_DIR")
+        RUN_TIME = os.getenv("RUN_TIME")
 
-        if not (bool(ALCHEMY_URL) and bool(ALCHEMY_API_KEY)):
-            raise Exception('🚨 Please add config to .env file')
+        if not (bool(ALCHEMY_URL) and bool(ALCHEMY_API_KEY) and
+                bool(TRADING_QTY) and bool(ARBITRAGE_THRESHOLD)
+                and bool(RESULT_DIR) and bool(RUN_TIME)):
+            raise Exception('\n🚨 Please add info to .env file')
 
+        self.result_dir = RESULT_DIR
+        self.run_time = RUN_TIME
+        self.trading_qty = float(TRADING_QTY)
+        self.arbitrage_threshold = float(ARBITRAGE_THRESHOLD)
         self.provider_url = craft_url(ALCHEMY_URL, ALCHEMY_API_KEY)
+
+    def set_quantity(self, qty) -> None:
+        try:
+            self.trading_qty = float(qty)
+        except ValueError as e:
+            logging.error(f'🚨 Using default quantity for tokens: {e}')
+
+    def set_time(self, time) -> None:
+        try:
+            self.run_time = float(time)
+        except ValueError as e:
+            logging.error(f'🚨 Using default time for run algorithm: {e}')
 
     def get_block_number(self) -> dict:
 
@@ -56,7 +85,7 @@ class ArbritageAPI(object):
                 eth_blockNumber_hex = response['result']
                 return hex_to_int(eth_blockNumber_hex)
             except TypeError:
-                logging.exception('🚨 Check whether the request is valid.}')
+                logging.exception('\n🚨 Check whether the request is valid.}')
 
     def get_token_balance(self, token, exchange) -> str:
 
@@ -75,7 +104,7 @@ class ArbritageAPI(object):
         try:
             return wei_to_eth(hex_to_int(response['result']))
         except KeyError:
-            logging.error(f'🚨 Could not retrieve data: {response}')
+            logging.error(f'\n🚨 Retrieved data is ill-formatted: {response}')
 
     def get_all_balances(self) -> None:
 
@@ -108,16 +137,59 @@ class ArbritageAPI(object):
                 self.current_balances_web3[exchange][token] = \
                     self._get_balance_for_wallet(exchange_address, token_obj)
 
-    def _calculate_pair_price(self, token1, token2) -> float:
+    def _calculate_pair_price(self, t1_balance, pair_balance, qty) -> float:
 
-        return token1/token2
+        buy_price = abs((t1_balance - qty) / (pair_balance + qty))
+        sell_price = abs((t1_balance + qty) / (pair_balance - qty))
 
-    def get_pair_prices(self, token1, token2) -> None:
+        return [format_price(buy_price), format_price(sell_price)]
 
+    def get_pair_prices(self, token, pair_token, qty=None) -> None:
+
+        qty = qty or self.trading_qty
         for exchange in self.exchanges_address.keys():
 
-            dai_balance = self.current_balances[exchange][token1]
-            weth_balance = self.current_balances[exchange][token2]
+            token_balance = self.current_balances[exchange][token]
+            pair_balance = self.current_balances[exchange][pair_token]
 
             self.current_prices[exchange] = \
-                self._calculate_pair_price(dai_balance, weth_balance)
+                self._calculate_pair_price(token_balance, pair_balance, qty)
+
+    def _calculate_arbitrage(self):
+        pass
+
+    def get_arbitrage(self) -> None:
+
+        self.get_all_balances()
+        self.get_pair_prices('DAI', 'WETH')
+
+        exchange_list = [item[0] for item in self.current_prices.items()]
+        buy_price = float('inf')
+        sell_price = 0
+        buy_exchange = None
+        sell_exchange = None
+
+        while exchange_list:
+            exchange_here = exchange_list.pop()
+
+            buy_price_here = float(self.current_prices[exchange_here][0])
+            if buy_price_here < buy_price:
+                buy_price = buy_price_here
+                buy_exchange = exchange_here
+
+            sell_price_here = float(self.current_prices[exchange_here][1])
+            if sell_price_here > sell_price:
+                sell_price = sell_price_here
+                sell_exchange = exchange_here
+
+            arbitrage = abs(sell_price_here - buy_price_here)
+            if arbitrage > self.arbitrage_threshold:
+                details = f"Buy at {buy_exchange} at {buy_price} and "
+                details = details + f"sell at {sell_exchange} at {sell_price}"
+                data = [arbitrage, details]
+                self.arbitrage_result.append(data)
+
+    def run_algorithm(self):
+
+        destination = format_path(self.result_dir, format_filename())
+        save_results(destination, 'to be implemented')
