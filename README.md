@@ -141,8 +141,7 @@ To get the current price for ETH/DAI in all the exchanges (as showed in [their d
 
 
 ```
-bdex -p
-
+bdex -p  dai eth
 ```
 
 <img width="484" alt="Screen Shot 2022-03-31 at 3 28 49 PM" src="https://user-images.githubusercontent.com/1130416/161045235-b29242d5-e32e-4865-8e6a-13b3d113adca.png">
