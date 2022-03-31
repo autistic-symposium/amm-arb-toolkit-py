@@ -2,6 +2,8 @@
 # Util methods
 
 
+import os
+import time
 import json
 import logging
 import requests
@@ -26,7 +28,7 @@ def send_request(url, data=None, params=None) -> dict:
     if r.status_code == 200:
         return r.json()
     else:
-        logging.error(f'🚨 Query failed: HTTP code {r.status_code}')
+        logging.error(f'\n🚨 Query failed: HTTP code {r.status_code}')
 
 
 def wei_to_eth(num) -> float:
@@ -45,4 +47,27 @@ def open_abi(filepath) -> json:
         with open(filepath, 'r') as f:
             return json.load(f)
     except Exception as e:
-        logging.error(f'🚨 Failed to parse: "{filepath}" {e}')
+        logging.error(f'\n🚨 Failed to parse: "{filepath}": {e}')
+
+
+def format_price(price) -> str:
+
+    return "{:.2f}".format(round(price, 2))
+
+
+def format_path(dir_path, filename) -> str:
+
+    return os.path.join(dir_path, filename)
+
+
+def format_filename() -> str:
+    return time.strftime("%Y-%m-%d_%H-%M-%S") + '.txt'
+
+
+def save_results(destination, data) -> None:
+
+    try:
+        with open(destination, 'w') as f:
+            f.write(data)
+    except IOError as e:
+        logging.error(f'\n🚨 Could not save {destination}: {e}')
