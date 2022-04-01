@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # -*- encoding: utf-8 -*-
-# Entry point for KeeperDAO arbritage exercise
+# Entry point for KeeperDAO arbitrage exercise
 
 import sys
 import argparse
 
-from api.arbritage import ArbritageAPI
+from api.arbitrage import ArbitrageAPI
 
 
 def _run_menu_options() -> argparse.ArgumentParser:
 
-    parser = argparse.ArgumentParser(description='🪙✨ BDEX arbritage CLI')
+    parser = argparse.ArgumentParser(description='🪙✨ BDEX arbitrage CLI')
 
     parser.add_argument('-c', dest='current_block', action='store_true',
                         help="Get current block nunber.")
@@ -37,7 +37,7 @@ def run_menu() -> None:
 
     parser = _run_menu_options()
     args = parser.parse_args()
-    api = ArbritageAPI()
+    api = ArbitrageAPI()
 
     if args.current_block:
         eth_blockNumber = api.get_block_number()
@@ -105,7 +105,7 @@ def run_menu() -> None:
                 print(f'🤑 profit: {data[0]} DAI')
                 print(f'  details: {data[1]}\n')
         else:
-            print('\n😭 No arbritrage found.\n')
+            print('\n😭 No arbitrage found.\n')
 
     elif args.algorithm:
 

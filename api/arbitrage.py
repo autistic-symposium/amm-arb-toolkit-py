@@ -14,7 +14,7 @@ from api.util import hex_to_int, wei_to_eth, send_request, \
                         format_filename
 
 
-class ArbritageAPI(object):
+class ArbitrageAPI(object):
 
     def __init__(self) -> None:
 
