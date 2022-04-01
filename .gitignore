@@ -10,6 +10,7 @@ venv.bak/
 # this repom
 ./api/*pyc
 .DS_Store
+/results/*txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

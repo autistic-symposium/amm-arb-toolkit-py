@@ -1,7 +1,6 @@
 # -*- encoding: utf-8 -*-
 # Util methods
 
-
 import os
 import time
 import json
@@ -61,13 +60,25 @@ def format_path(dir_path, filename) -> str:
 
 
 def format_filename() -> str:
-    return time.strftime("%Y-%m-%d_%H-%M-%S") + '.txt'
+
+    return "arbitrage_" + time.strftime("%Y-%m-%d_%H-%M-%S") + '.txt'
 
 
 def save_results(destination, data) -> None:
 
     try:
         with open(destination, 'w') as f:
-            f.write(data)
+            for line in data:
+
+                f.write(", ".join(line))
     except IOError as e:
         logging.error(f'\n🚨 Could not save {destination}: {e}')
+
+
+def create_dir(result_dir) -> None:
+
+    try:
+        if not os.path.isdir(result_dir):
+            os.mkdir(result_dir)
+    except OSError as e:
+        logging.error(f'🚨 Could not create {result_dir}: {e}')

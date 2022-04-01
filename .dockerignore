@@ -1,0 +1,8 @@
+venv
+README.md
+tests
+.env_example
+tox.ini
+Pipfile
+requirements-dev.txt
+.gitignore

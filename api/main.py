@@ -99,20 +99,21 @@ def run_menu() -> None:
     elif args.arbitrage:
         api.get_arbitrage()
 
-        if api.arbitrage_result is not None:
+        if api.arbitrage_result:
             print(f'\n✅ Found these opportunities (qty: {api.trading_qty}):\n')
             for data in api.arbitrage_result:
-                print(f'🤑 profit: {data[0]} ETH')
+                print(f'🤑 profit: {data[0]} DAI')
                 print(f'  details: {data[1]}\n')
         else:
-            print('😭 No arbritrage found.\n')
+            print('\n😭 No arbritrage found.\n')
 
     elif args.algorithm:
-        api.set_time(args.algorithm[0])
 
-        api.run_algorithm()
-        print('\n✅ Algorithm running in the docker container.')
-        print(f'    Check {api.result_dir} in {api.run_time} minutes.\n')
+        print(f'\n✅ Running the in a loop of {args.algorithm[0]} minutes..\n')
+
+        api.run_algorithm(float(args.algorithm[0]))
+
+        print(f'\n✅ Done. Results saved at {api.result_dir}.\n')
 
     else:
         parser.print_help(sys.stderr)
