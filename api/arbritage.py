@@ -2,6 +2,7 @@
 # Arbitrage API
 
 import os
+import time
 import logging
 from web3 import Web3
 from pathlib import Path
@@ -9,7 +10,8 @@ from dotenv import load_dotenv
 
 from api.util import hex_to_int, wei_to_eth, send_request, \
                         craft_url, open_abi, format_price, \
-                        save_results, format_path, format_filename
+                        save_results, format_path, create_dir, \
+                        format_filename
 
 
 class ArbritageAPI(object):
@@ -35,7 +37,6 @@ class ArbritageAPI(object):
         self.provider_url = None
         self.w3_obj = None
         self.result_dir = None
-        self.run_time = 0
         self.trading_qty = 0
         self.arbitrage_threshold = 0
 
@@ -63,17 +64,45 @@ class ArbritageAPI(object):
         self.arbitrage_threshold = float(ARBITRAGE_THRESHOLD)
         self.provider_url = craft_url(ALCHEMY_URL, ALCHEMY_API_KEY)
 
+    def _calculate_pair_price(self, t1_balance, pair_balance, qty) -> float:
+
+        buy_price = (pair_balance + qty) / (t1_balance - qty)
+        sell_price = (pair_balance - qty) / (t1_balance + qty)
+
+        # TODO: handle smaller quantity better (negative prices)
+        if buy_price < 0:
+            buy_price = 0
+
+        return [format_price(buy_price), format_price(sell_price)]
+
+    def _get_balance_for_wallet(self, wallet_address, token_obj) -> float:
+
+        balance_wei = token_obj.functions.balanceOf(wallet_address).call()
+        return float(self.w3_obj.fromWei(balance_wei, 'ether'))
+
+    def get_balance_through_web3_lib(self) -> None:
+
+        self.w3_obj = Web3(Web3.HTTPProvider(self.provider_url))
+
+        for exchange, contract in self.exchanges_address.items():
+            self.current_balances_web3[exchange] = {}
+            exchange_address = self.w3_obj.toChecksumAddress(contract)
+
+            for token, contract in self.tokens_address.items():
+
+                abi = open_abi(f'./docs/{token}-abi.json')
+                address = self.w3_obj.toChecksumAddress(contract)
+                token_obj = self.w3_obj.eth.contract(address=address, abi=abi)
+
+                self.current_balances_web3[exchange][token] = \
+                    self._get_balance_for_wallet(exchange_address, token_obj)
+
     def set_quantity(self, qty) -> None:
+
         try:
             self.trading_qty = float(qty)
         except ValueError as e:
             logging.error(f'🚨 Using default quantity for tokens: {e}')
-
-    def set_time(self, time) -> None:
-        try:
-            self.run_time = float(time)
-        except ValueError as e:
-            logging.error(f'🚨 Using default time for run algorithm: {e}')
 
     def get_block_number(self) -> dict:
 
@@ -115,35 +144,6 @@ class ArbritageAPI(object):
                 self.current_balances[exchange][token] = \
                     self.get_token_balance(token, exchange)
 
-    def _get_balance_for_wallet(self, wallet_address, token_obj) -> float:
-
-        balance_wei = token_obj.functions.balanceOf(wallet_address).call()
-        return float(self.w3_obj.fromWei(balance_wei, 'ether'))
-
-    def get_balance_through_web3_lib(self) -> None:
-
-        self.w3_obj = Web3(Web3.HTTPProvider(self.provider_url))
-
-        for exchange, contract in self.exchanges_address.items():
-            self.current_balances_web3[exchange] = {}
-            exchange_address = self.w3_obj.toChecksumAddress(contract)
-
-            for token, contract in self.tokens_address.items():
-
-                abi = open_abi(f'./docs/{token}-abi.json')
-                address = self.w3_obj.toChecksumAddress(contract)
-                token_obj = self.w3_obj.eth.contract(address=address, abi=abi)
-
-                self.current_balances_web3[exchange][token] = \
-                    self._get_balance_for_wallet(exchange_address, token_obj)
-
-    def _calculate_pair_price(self, t1_balance, pair_balance, qty) -> float:
-
-        buy_price = abs((t1_balance - qty) / (pair_balance + qty))
-        sell_price = abs((t1_balance + qty) / (pair_balance - qty))
-
-        return [format_price(buy_price), format_price(sell_price)]
-
     def get_pair_prices(self, token, pair_token, qty=None) -> None:
 
         qty = qty or self.trading_qty
@@ -155,41 +155,65 @@ class ArbritageAPI(object):
             self.current_prices[exchange] = \
                 self._calculate_pair_price(token_balance, pair_balance, qty)
 
-    def _calculate_arbitrage(self):
-        pass
-
-    def get_arbitrage(self) -> None:
+    def get_arbitrage(self) -> list:
 
         self.get_all_balances()
-        self.get_pair_prices('DAI', 'WETH')
+
+        # TODO: generalize to any pair input
+        self.get_pair_prices('WETH', 'DAI')
 
         exchange_list = [item[0] for item in self.current_prices.items()]
         buy_price = float('inf')
         sell_price = 0
         buy_exchange = None
         sell_exchange = None
+        data = []
 
         while exchange_list:
             exchange_here = exchange_list.pop()
 
             buy_price_here = float(self.current_prices[exchange_here][0])
-            if buy_price_here < buy_price:
+            # TODO: handle smaller quantity better (negative price)
+            if buy_price_here < buy_price and buy_price_here > 0:
                 buy_price = buy_price_here
                 buy_exchange = exchange_here
+                continue
 
             sell_price_here = float(self.current_prices[exchange_here][1])
             if sell_price_here > sell_price:
                 sell_price = sell_price_here
                 sell_exchange = exchange_here
+                continue
 
-            arbitrage = abs(sell_price_here - buy_price_here)
-            if arbitrage > self.arbitrage_threshold:
-                details = f"Buy at {buy_exchange} at {buy_price} and "
-                details = details + f"sell at {sell_exchange} at {sell_price}"
-                data = [arbitrage, details]
-                self.arbitrage_result.append(data)
+        # TODO: re-add options for multiple arbitrages in this loop
+        arbitrage = buy_price_here - sell_price_here
+        if arbitrage > self.arbitrage_threshold:
+            details = f"Buy at {sell_exchange} at {sell_price} and "
+            details = details + f"sell at {buy_exchange} at {buy_price}"
+            data = [arbitrage, details]
+            self.arbitrage_result.append(data)
 
-    def run_algorithm(self):
+        # TODO: remove hardcoded DAI (add token name)
+        return f'Arbitrage: {arbitrage} DAI: ' + details
 
+    def run_algorithm(self, runtime) -> None:
+
+        results = []
+        loop = 0
+        runtime = 60 * runtime
+        end = time.time() + runtime
+
+        while time.time() < end:
+
+            data = self.get_arbitrage()
+            if data:
+                print(f'    Loop {loop}: {data}')
+                results.append(data)
+            loop += loop + 1
+
+            time.sleep(5)
+
+        create_dir(self.result_dir)
         destination = format_path(self.result_dir, format_filename())
-        save_results(destination, 'to be implemented')
+
+        save_results(destination, results)

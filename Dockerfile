@@ -1,7 +1,7 @@
 #Deriving the latest base image
 FROM python:latest
 
-WORKDIR /src
+WORKDIR /app
 
 COPY requirements.txt .
 RUN pip install -r requirements.txt
@@ -14,4 +14,4 @@ COPY Makefile .
 
 RUN make install
 
-CMD [ "bdex", "-r", "5"]
+CMD [ "bdex", "-r", "50"]

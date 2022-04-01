@@ -74,6 +74,10 @@ bdex
 
 <br>
 
+📝 TODO: remove namespace prints from options `bdex -h` (i.e. the extra `BALANCE BALANCE`, etc.).
+
+<br>
+
 ### Checking the latest block
 
 
@@ -89,7 +93,11 @@ bdex -c
 
 <br>
 
+<br>
+
 The block number can be checked against [ETHstat](https://ethstats.net/).
+
+📝 TODO: Possible improvement for the future: We are crafting the checksum address string by hand without composing it by [Keccak-256 hashing the methods and parameters](https://docs.soliditylang.org/en/develop/abi-spec.html).
 
 <br>
 
@@ -101,7 +109,7 @@ The block number can be checked against [ETHstat](https://ethstats.net/).
 
 ### Getting the token balance for an exchange
 
-We leverage [Alchemy API endpoint `eth_call`](https://docs.alchemy.com/alchemy/apis/ethereum/eth_call) to retrieve the current token balance for an specific exchange:
+We leverage [Alchemy API endpoint `eth_call`](https://docs.alchemy.com/alchemy/apis/ethereum/eth_call) to retrieve the current token balance for a specific exchange:
 
 ```
 bdex -b dai uniswap
@@ -147,10 +155,12 @@ bdex -w
 
 <br>
 
-For this library, it's necessary to supply the contracts' ABI (in our case, for [DAI](https://api.etherscan.io/api?module=contract&action=getabi&address=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2) and [WETH](https://api.etherscan.io/api?module=contract&action=getabi&address=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2) - located at `./docs`)
+<br>
+
+💡 For this library, it's necessary to supply the contracts' ABI (in our case, for [DAI](https://api.etherscan.io/api?module=contract&action=getabi&address=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2) and [WETH](https://api.etherscan.io/api?module=contract&action=getabi&address=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2), located at `./docs`)
 
 
-Note that a third option to verify token balances is through [Etherscan tokenholdings dashboard](https://etherscan.io/tokenholdings?a=0xa478c2975ab1ea89e8196811f51a7b7ade33eb11).
+💡 Note that a third option to verify token balances is through [Etherscan tokenholdings dashboard](https://etherscan.io/tokenholdings?a=0xa478c2975ab1ea89e8196811f51a7b7ade33eb11).
 
 
 <br>
@@ -158,17 +168,25 @@ Note that a third option to verify token balances is through [Etherscan tokenhol
 
 ### Getting trading prices for all the exchanges
 
-To get the current price for ETH/DAI in all the exchanges (e.g., as showed in [the projects' dashboards](https://v2.info.uniswap.org/pair/0xa478c2975ab1ea89e8196811f51a7b7ade33eb11)), run:
+To get the current price for ETH/DAI in all the exchanges (e.g., as shown in [the projects' dashboards](https://v2.info.uniswap.org/pair/0xa478c2975ab1ea89e8196811f51a7b7ade33eb11)), run:
 
 
 ```
-bdex -p weth eth 10
+bdex -p weth dai 10
 ```
 
 <br>
+<img width="489" alt="Screen Shot 2022-04-01 at 10 26 54 AM" src="https://user-images.githubusercontent.com/1130416/161207492-0dcc6910-8c07-426a-b910-2cfd5336a1b5.png">
 
-<img width="484" alt="Screen Shot 2022-03-31 at 10 28 33 PM" src="https://user-images.githubusercontent.com/1130416/161125333-710dc123-206c-488c-9369-7992481f0e4f.png">
 
+<img width="499" alt="Screen Shot 2022-04-01 at 10 27 25 AM" src="https://user-images.githubusercontent.com/1130416/161207508-9bd76eb8-4aac-467c-8801-a3211bed7fff.png">
+
+<img width="523" alt="Screen Shot 2022-04-01 at 10 42 57 AM" src="https://user-images.githubusercontent.com/1130416/161209675-3ed3b07b-f16d-4227-9724-64ac733307ed.png">
+
+
+
+
+<br>
 
 #### How the price is calculated
 
@@ -178,7 +196,18 @@ All the exchanges are forks from [UniswapV2](https://uniswap.org/blog/uniswap-v2
 price = balance_token1 * balance_token2 = constant
  ```
 
-TODO: add info on selling/buying price
+To find the buy price, we add the quantity of pair tokens which we are using as the exchange (adding to the pool), and we substract the quantity of tokens we are buying (removing from the pool):
+
+```
+buy_price = (pair_balance + qty) / (t1_balance - qty)
+```
+
+For sell price, we do the oppose:
+
+```
+sell_price = (pair_balance - qty) / (t1_balance + qty)
+```
+
 
 
 <br>
@@ -194,15 +223,19 @@ bdex -x
 
 <br>
 
-<img width="509" alt="Screen Shot 2022-03-31 at 10 29 21 PM" src="https://user-images.githubusercontent.com/1130416/161125421-524d1f9c-f4ca-4c60-91ea-4a26062c040f.png">
+<img width="511" alt="Screen Shot 2022-04-01 at 11 20 13 AM" src="https://user-images.githubusercontent.com/1130416/161214916-1a95feba-d5fb-4e60-b7fb-5962ad1bb3b8.png">
+
+
+<br>
+<br>
+
+This is a very simple algorithm. Because our set of coins and exchanges is small, brute forcing is not so costly.
+
+📝 TODO: improve this algorithm adding a node walking (graph solution).
 
 <br>
 
-TODO: explain how the algorithm works
-
-<br>
-
-### Running Docker container with arbritage script
+### Running Docker container with arbitrage script
 
 To run the arbitrage algorithm for a certain amount of minutes MIN, run:
 
@@ -212,35 +245,57 @@ bdex -r MIN
 
 <br>
 
-<img width="434" alt="Screen Shot 2022-03-31 at 10 30 06 PM" src="https://user-images.githubusercontent.com/1130416/161125459-b5e17e3a-4e24-43d7-81ba-4c911a1d6c7d.png">
+
+<img width="764" alt="Screen Shot 2022-04-01 at 11 37 31 AM" src="https://user-images.githubusercontent.com/1130416/161217688-c1aae8b9-6e8b-4a78-9ada-b6adeb066273.png">
+
+<br>
 
 <br>
 
 Results will be saved into files names `results/<TIME_SAVED>.txt`.
 
+<br>
+
+📝 TODO: run the algorithm in several threads (if not running in a Docker container).
+
+<br>
+
 #### Running in docker
 
-To run the algorithm in a separated container, first [install Docker]().
-
-Then build the Docker image:
+To run the algorithm in a separated container, first [install Docker](https://docs.docker.com/get-docker/). Then build the Docker image:
 
 ```
 docker build -t bdex .
 ```
 
-Finally, run the container:
+Finally, run the container (in a separate terminal tab):
 
 ```
-docker run -d bdex
+docker run -v $(pwd):/results -it bdex sleep infinity
 ```
 
-Results will be also be available into files names `results/<TIME_SAVED>.txt`. 
+Results will also be available in files names `results/<TIME_SAVED>.txt`.
 
-You can inspect your container at any time with:
+💡 You can inspect your container at any time with these commands:
 
 ```
 docker ps
+docker exec -it <container_id> /bin/bash
+docker inspect bdex
 ```
+
+Cleaning up:
+
+```
+docker volumes prune
+```
+
+<br>
+
+
+📝 TODO: add a script to mount results and save in disk after finished running the script.
+
+<br>
 
 ---
 
@@ -266,3 +321,5 @@ make lint
 ```
 make test
 ```
+
+
