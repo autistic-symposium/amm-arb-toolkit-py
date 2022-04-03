@@ -307,7 +307,7 @@ bdex -x QUANTITY
 
 ## Running arbitrage algorithm in a loop
 
-To run the arbitrage algorithm for a certain amount of minutes MIN, run:
+To run the arbitrage algorithm for a certain amount of minutes, run:
 
 ```bash
 bdex -r MIN
@@ -315,8 +315,8 @@ bdex -r MIN
 
 <br>
 
+<img width="439" alt="Screen Shot 2022-04-03 at 11 24 16 PM" src="https://user-images.githubusercontent.com/1130416/161444584-1503c563-934d-46a1-993a-d6cd9177cf50.png">
 
-<img width="764" alt="Screen Shot 2022-04-01 at 11 37 31 AM" src="https://user-images.githubusercontent.com/1130416/161217688-c1aae8b9-6e8b-4a78-9ada-b6adeb066273.png">
 
 <br>
 
