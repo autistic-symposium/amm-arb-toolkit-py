@@ -70,7 +70,7 @@ bdex
 
 <br>
 
-<img width="819" alt="Screen Shot 2022-04-03 at 9 14 25 PM" src="https://user-images.githubusercontent.com/1130416/161439746-2b6b45c1-88ef-4423-a0fb-7897aba943b6.png">
+<img width="803" alt="Screen Shot 2022-04-03 at 11 07 27 PM" src="https://user-images.githubusercontent.com/1130416/161444050-f3a5a528-4572-4217-a29c-d9ac1b32d46b.png">
 
 
 <br>
@@ -293,7 +293,7 @@ bdex -x 1000
 
 <br>
 
-<img width="511" alt="Screen Shot 2022-04-01 at 11 20 13 AM" src="https://user-images.githubusercontent.com/1130416/161214916-1a95feba-d5fb-4e60-b7fb-5962ad1bb3b8.png">
+<img width="544" alt="Screen Shot 2022-04-03 at 11 05 44 PM" src="https://user-images.githubusercontent.com/1130416/161444040-da9f75ef-a100-40ef-bb8e-f937596defca.png">
 
 
 <br>
