@@ -330,7 +330,7 @@ Results will be saved into files names `results/<LOCAL_TIME>.txt`.
 
 <br>
 
-## Running arbitrage algorithm in a Docker container
+## Running arbitrage algorithm in a loop in a Docker container
 
 To run the algorithm in a separated container, first [install Docker](https://docs.docker.com/get-docker/). Then build the Docker image:
 
