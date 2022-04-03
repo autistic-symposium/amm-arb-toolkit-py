@@ -9,16 +9,16 @@
 
 #### Token pairs:
 
-* ETH/DAI
+* **WETH/DAI**
 
 
 #### Exchanges:
 
-* Uniswap ([0xa478c2975ab1ea89e8196811f51a7b7ade33eb11](https://etherscan.io/address/0xa478c2975ab1ea89e8196811f51a7b7ade33eb11))
-* Sushiswap ([0xc3d03e4f041fd4cd388c549ee2a29a9e5075882f](https://etherscan.io/address/0xc3d03e4f041fd4cd388c549ee2a29a9e5075882f))
-* Shebaswap ([0x8faf958e36c6970497386118030e6297fff8d275](https://etherscan.io/address/0x8faf958e36c6970497386118030e6297fff8d275))
-* Sakeswap ([0x2ad95483ac838e2884563ad278e933fba96bc242](https://etherscan.io/address/0x2ad95483ac838e2884563ad278e933fba96bc242))
-* Croswap ([0x60a26d69263ef43e9a68964ba141263f19d71d51)](https://etherscan.io/address/0x60a26d69263ef43e9a68964ba141263f19d71d51)
+* **Uniswap** ([0xa478c2975ab1ea89e8196811f51a7b7ade33eb11](https://etherscan.io/address/0xa478c2975ab1ea89e8196811f51a7b7ade33eb11))
+* **Sushiswap** ([0xc3d03e4f041fd4cd388c549ee2a29a9e5075882f](https://etherscan.io/address/0xc3d03e4f041fd4cd388c549ee2a29a9e5075882f))
+* **Shebaswap** ([0x8faf958e36c6970497386118030e6297fff8d275](https://etherscan.io/address/0x8faf958e36c6970497386118030e6297fff8d275))
+* **Sakeswap** ([0x2ad95483ac838e2884563ad278e933fba96bc242](https://etherscan.io/address/0x2ad95483ac838e2884563ad278e933fba96bc242))
+* **Croswap** ([0x60a26d69263ef43e9a68964ba141263f19d71d51)](https://etherscan.io/address/0x60a26d69263ef43e9a68964ba141263f19d71d51)
 
 <br>
 
@@ -28,29 +28,29 @@
 
 ## Setting your environment
 
-Add your [Alchemy API key and endpoint](https://dashboard.alchemyapi.io/apps) to a `.env` file:
+Add your [Alchemy API key and endpoint](https://dashboard.alchemyapi.io/apps) to a file named `.env`:
 
-```
+```bash
 cp .env_example .env
 vim .env
 ```
 
 Create a virtual environment:
 
-```
+```bash
 virtualenv venv
 source venv/bin/activate
 ```
 
 Install dependencies:
 
-```
+```bash
 make install_deps
 ```
 
 Install the CLI:
 
-```
+```bash
 make install
 ```
 
@@ -84,7 +84,7 @@ bdex
 
 We leverage [Alchemy API endpoint `eth_blockNumber_hex`](https://docs.alchemy.com/alchemy/apis/ethereum/eth_blockNumber_hex) to get the latest block:
 
-```
+```bash
 bdex -c
 ```
 
@@ -112,8 +112,8 @@ The block number can be checked against [ETHstat](https://ethstats.net/).
 
 We leverage [Alchemy API endpoint `eth_call`](https://docs.alchemy.com/alchemy/apis/ethereum/eth_call) to retrieve the current token balance for a specific exchange:
 
-```
-bdex -b dai uniswap
+```bash
+bdex -b TOKEN EXCHANGE
 ```
 <br>
 
@@ -128,7 +128,7 @@ bdex -b dai uniswap
 
  We loop over the previous method for a list of tokens and exchanges:
 
-```
+```bash
 bdex -a
 ```
 
@@ -146,7 +146,7 @@ bdex -a
 
 To be able to compare our results from the previous steps, we implemented an alternative way to fetch pair balances utilizing the [Python web3 library](https://web3py.readthedocs.io/en/stable/):
 
-```
+```bash
 bdex -w
 ```
 <br>
@@ -172,8 +172,8 @@ bdex -w
 To get the current price for ETH/DAI in all the exchanges (e.g., as shown in [the projects' dashboards](https://v2.info.uniswap.org/pair/0xa478c2975ab1ea89e8196811f51a7b7ade33eb11)), run:
 
 
-```
-bdex -p 1 weth dai
+```bash
+bdex -p QUANTITY TOKEN1 TOKEN2
 ```
 
 <br>
@@ -216,9 +216,9 @@ token_a_pool_size * token_b_pool_size = constant_product
 
 All the exchanges are forks from [UniswapV2](https://uniswap.org/blog/uniswap-v2), so they all use the same price formula for trading:
 
- ```
+```
 market_price_token1 = token2_balance / token1_balance
- ```
+```
 
 For example, in a pool with `2,000,000 DAI` and `1,000 WETH`, the constant product is `2,000,000,000` and the market price for `WETH` is `$2,000`.
 
@@ -287,8 +287,8 @@ sell_price = t2_amount_out_buy / t1_amount_in_sell
 
 Run an algorithm to search for arbitrage in the supported exchanges for a certain quantity:
 
-```
-bdex -x 1000
+```bash
+bdex -x QUANTITY
 ```
 
 <br>
@@ -305,11 +305,11 @@ bdex -x 1000
 
 <br>
 
-### Running Docker container with arbitrage script
+## Running arbitrage algorithm in a loop
 
 To run the arbitrage algorithm for a certain amount of minutes MIN, run:
 
-```
+```bash
 bdex -r MIN
 ```
 
@@ -322,7 +322,7 @@ bdex -r MIN
 
 <br>
 
-Results will be saved into files names `results/<TIME_SAVED>.txt`.
+Results will be saved into files names `results/<LOCAL_TIME>.txt`.
 
 <br>
 
@@ -330,11 +330,11 @@ Results will be saved into files names `results/<TIME_SAVED>.txt`.
 
 <br>
 
-## Running in docker container
+## Running arbitrage algorithm in a Docker container
 
 To run the algorithm in a separated container, first [install Docker](https://docs.docker.com/get-docker/). Then build the Docker image:
 
-```
+```bash
 docker build -t bdex .
 ```
 
@@ -344,7 +344,7 @@ Finally, run the container (in a separate terminal tab):
 docker run -v $(pwd):/results -it bdex sleep infinity
 ```
 
-Results will also be available in files names `results/<TIME_SAVED>.txt`.
+Results will also be available in files names `results/<LOCAL_TIME>.txt`.
 
 💡 You can inspect your container at any time with these commands:
 
@@ -391,5 +391,4 @@ make lint
 ```
 make test
 ```
-
-
+📝 TODO: possible future improvement, adding unit tests.
