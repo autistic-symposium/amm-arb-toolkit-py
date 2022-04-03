@@ -194,7 +194,7 @@ class ArbitrageAPI(object):
 
             if float(price_data[5]) <= float(self.min_healthy_pool):
                 self.current_price_data[exchange].update({
-                    'info': "Pool's unbalanced for at least one token.",
+                    'info': "Pool is unbalanced for at least one token.",
                 })
 
             else:
@@ -236,10 +236,10 @@ class ArbitrageAPI(object):
         if arbitrage > self.arbitrage_threshold:
             info_buy = f"BUY for ${win_buy_price} at {win_buy_exchange} and "
             info_sell = f"SELL for ${win_sell_price} at {win_sell_exchange}"
-            self.arbitrage_result.update({
+            self.arbitrage_result[get_time_now()] = {
                 'info': info_buy + info_sell,
                 'arbitrage': format_price(arbitrage)
-            })
+            }
 
     def get_arbitrage(self, quantity, token1=None, token2=None):
 
@@ -256,7 +256,7 @@ class ArbitrageAPI(object):
 
         while time.time() < end:
             self.get_arbitrage(quantity)
-            time.sleep(60)
+            # time.sleep(60)
 
         create_dir(self.result_dir)
         destination = format_path(self.result_dir, format_filename())

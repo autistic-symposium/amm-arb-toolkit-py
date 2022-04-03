@@ -75,10 +75,6 @@ bdex
 
 <br>
 
-📝 TODO: remove namespace prints from options `bdex -h` (i.e. the extra `BALANCE BALANCE`, etc.).
-
-<br>
-
 ## Checking the latest block
 
 
@@ -96,9 +92,8 @@ bdex -c
 
 <br>
 
-The block number can be checked against [ETHstat](https://ethstats.net/).
+💡 The block number can be checked against [ETHstat](https://ethstats.net/).
 
-📝 TODO: Possible improvement for the future: We are crafting the checksum address string by hand without composing it by [Keccak-256 hashing the methods and parameters](https://docs.soliditylang.org/en/develop/abi-spec.html).
 
 <br>
 
@@ -107,6 +102,9 @@ The block number can be checked against [ETHstat](https://ethstats.net/).
 
 <br>
 
+📝 TODO: Possible improvement for the future: We are crafting the checksum address string by hand without composing it by [Keccak-256 hashing the methods and parameters](https://docs.soliditylang.org/en/develop/abi-spec.html).
+
+<br>
 
 ## Getting the token balance for an exchange
 
@@ -142,7 +140,7 @@ bdex -a
 <br>
 
 
-## [Extra] Getting all token balances for all the exchanges with the web3 Python library
+## [Extra] Getting all token balances for all exchanges with Python's web3 library
 
 To be able to compare our results from the previous steps, we implemented an alternative way to fetch pair balances utilizing the [Python web3 library](https://web3py.readthedocs.io/en/stable/):
 
@@ -161,7 +159,7 @@ bdex -w
 💡 For this library, it's necessary to supply the contracts' ABI (in our case, for [DAI](https://api.etherscan.io/api?module=contract&action=getabi&address=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2) and [WETH](https://api.etherscan.io/api?module=contract&action=getabi&address=0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2), located at `./docs`)
 
 
-💡 Note that a third option to verify token balances is through [Etherscan tokenholdings dashboard](https://etherscan.io/tokenholdings?a=0xa478c2975ab1ea89e8196811f51a7b7ade33eb11).
+💡 A third option to verify token balances is through [Etherscan tokenholdings dashboard](https://etherscan.io/tokenholdings?a=0xa478c2975ab1ea89e8196811f51a7b7ade33eb11).
 
 
 <br>
@@ -169,7 +167,7 @@ bdex -w
 
 ## Getting trading prices for all the exchanges
 
-To get the current price for `WETH/DAI` in all the exchanges (e.g., as shown in [the projects' dashboards](https://v2.info.uniswap.org/pair/0xa478c2975ab1ea89e8196811f51a7b7ade33eb11)), run:
+To get the current price for `WETH/DAI` in all exchanges (e.g., as shown in [the projects' dashboards](https://v2.info.uniswap.org/pair/0xa478c2975ab1ea89e8196811f51a7b7ade33eb11)), run:
 
 
 ```bash
@@ -178,7 +176,7 @@ bdex -p QUANTITY TOKEN1 TOKEN2
 
 <br>
 
-Result for trading 1 WETH:
+Quote for trading 1 `WETH`:
 
 <br>
 
@@ -186,7 +184,7 @@ Result for trading 1 WETH:
 
 <br>
 
-Result for trading 10 WETH:
+Quote for trading 10 `WETH`:
 
 <br>
 
@@ -194,7 +192,7 @@ Result for trading 10 WETH:
 
 <br>
 
-Result for trading 100 WETH:
+Quote for trading 100 `WETH`:
 
 <br>
 
@@ -249,7 +247,7 @@ buy_price = quantity / t1_amount_out_buy
 
 #### Sell price (e.g., selling `WETH` in a `WETH/DAI` pool)
 
-To find how much we can sell a certain quantity of WETH for `DAI`, first, we calculate the ratio of `DAI` in the new pool, as we add `WETH`:
+To find how much we can sell a certain quantity of `WETH` for `DAI`, first, we calculate the ratio of `DAI` in the new pool, as we add `WETH`:
 
 ```
 token2_balance_buy = constant_product / (token1_balance + quantity)
@@ -285,7 +283,7 @@ sell_price = t2_amount_out_buy / t1_amount_in_sell
 
 ## Getting arbitrage
 
-Run an algorithm to search for arbitrage in the supported exchanges for a certain quantity:
+Run an algorithm to search for arbitrage in the supported exchanges for a certain buy quantity:
 
 ```bash
 bdex -x QUANTITY
@@ -308,7 +306,7 @@ bdex -x QUANTITY
 
 ## Running arbitrage algorithm in a loop
 
-To run the arbitrage algorithm for a certain amount of minutes, run:
+To run the arbitrage algorithm for a certain amount of minutes:
 
 ```bash
 bdex -r MIN
@@ -323,7 +321,7 @@ bdex -r MIN
 
 <br>
 
-Results will be saved into files names `results/<LOCAL_TIME>.txt`.
+Results are saved into `results/<LOCAL_TIME>.txt`.
 
 <br>
 
@@ -333,7 +331,7 @@ Results will be saved into files names `results/<LOCAL_TIME>.txt`.
 
 ## Running arbitrage algorithm in a loop in a Docker container
 
-To run the algorithm in a separated container, first [install Docker](https://docs.docker.com/get-docker/). Then build the Docker image:
+To run the algorithm in a separated container, first [install Docker](https://docs.docker.com/get-docker/), then build the Docker image:
 
 ```bash
 docker build -t bdex .
@@ -345,7 +343,7 @@ Finally, run the container (in a separate terminal tab):
 docker run -v $(pwd):/results -it bdex sleep infinity
 ```
 
-Results will also be available in files names `results/<LOCAL_TIME>.txt`.
+Results are available at `results/<LOCAL_TIME>.txt`.
 
 💡 You can inspect your container at any time with these commands:
 
@@ -392,4 +390,3 @@ make lint
 ```
 make test
 ```
-📝 TODO: possible future improvement, adding unit tests.

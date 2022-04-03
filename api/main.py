@@ -100,21 +100,21 @@ def run_menu() -> None:
             tokens_list = ", ".join([_ for _ in api.tokens_address.keys()])
             print(f'\n🚨 {token1} or {token2} not supported')
             print(f'🚨 Supported coins: {tokens_list}\n')
+            return
 
-        else:
-            api.get_pair_prices(token1, token2, quantity)
+        api.get_pair_prices(token1, token2, quantity)
 
-            print(f'\n🪙 Trading {quantity} ({token1}/{token2}):\n')
-            for exchange, data in api.current_price_data.items():
-                print(f"✅ {exchange}:")
-                print(f"MARKET: ${data['current_price']}")
-                if 'buy_price' not in data.keys():
-                    print(f"{data['info']}")
-                    print(f"{token1} balance: {data['balance_t1']}")
-                    print(f"{token2} balance: {data['balance_t2']}\n")
-                else:
-                    print(f"BUY:    ${data['buy_price']}, 🔺{data['buy_impact']}")
-                    print(f"SELL:   ${data['sell_price']}, 🔻{data['sell_impact']}\n")
+        print(f'\n🪙 Trading {quantity} ({token1}/{token2}):\n')
+        for exchange, data in api.current_price_data.items():
+            print(f"✅ {exchange}:")
+            print(f"PRICE: ${data['current_price']}")
+            if 'buy_price' not in data.keys():
+                print(f"{data['info']}")
+                print(f"{token1} balance: {data['balance_t1']}")
+                print(f"{token2} balance: {data['balance_t2']}\n")
+            else:
+                print(f"BUY:   ${data['buy_price']} 🔺{data['buy_impact']}")
+                print(f"SELL:  ${data['sell_price']} 🔻{data['sell_impact']}\n")
 
     ########################################
     # Run arbitrage algorithm once
@@ -134,11 +134,11 @@ def run_menu() -> None:
     # Run arbitrage algorithm in a loop
     ########################################
     elif args.loop:
-        runtime = args.loop[0]
+        time = args.loop[0]
         quantity = args.loop[1]
 
-        print(f'\n✅ Running loop of {runtime} minutes for quantity {quantity}...')
-        api.run_arbitrage_loop(runtime, quantity)
+        print(f'\n✅ Running loop of {time} minutes for quantity {quantity}')
+        api.run_arbitrage_loop(time, quantity)
         print(f'\n✅ Done. Results saved at {api.result_dir}.\n')
 
     ########################################
