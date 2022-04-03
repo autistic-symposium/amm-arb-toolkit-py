@@ -206,7 +206,7 @@ class ArbitrageAPI(object):
                     'info': get_time_now(),
                 })
 
-    def _calculate_arbitrage_brute_force(self):
+    def _calculate_arbitrage_brute_force(self) -> None:
 
         win_buy_price = float('inf')
         win_sell_price = 0
@@ -236,8 +236,10 @@ class ArbitrageAPI(object):
         if arbitrage > self.arbitrage_threshold:
             info_buy = f"BUY for ${win_buy_price} at {win_buy_exchange} and "
             info_sell = f"SELL for ${win_sell_price} at {win_sell_exchange}"
-            self.arbitrage_result['info'] = info_buy + info_sell
-            self.arbitrage_result['arbitrage'] = format_price(arbitrage)
+            self.arbitrage_result.update({
+                'info': info_buy + info_sell,
+                'arbitrage': format_price(arbitrage)
+            })
 
     def get_arbitrage(self, quantity, token1=None, token2=None):
 
@@ -248,24 +250,14 @@ class ArbitrageAPI(object):
         self.get_pair_prices(token1, token2, quantity)
         self._calculate_arbitrage_brute_force()
 
-    def run_algorithm(self, runtime) -> None:
+    def run_arbitrage_loop(self, runtime, quantity) -> None:
 
-        results = []
-        loop = 0
-        runtime = 60 * float(runtime)
-        end = time.time() + runtime
+        end = time.time() + 60 * float(runtime)
 
         while time.time() < end:
-
-            data = self.get_arbitrage()
-            if data:
-                print(f'    Loop {loop}: {data}')
-                results.append(data)
-            loop += loop + 1
-
-            time.sleep(5)
+            self.get_arbitrage(quantity)
+            time.sleep(60)
 
         create_dir(self.result_dir)
         destination = format_path(self.result_dir, format_filename())
-
-        save_results(destination, results)
+        save_results(destination, self.arbitrage_result)
