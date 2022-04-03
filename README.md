@@ -190,16 +190,18 @@ bdex -p weth dai 10
 
 #### How the price is calculated
 
+An AMM replaces the buy and sell orders in an order book market with a liquidity pool of two assets, both valued relative to each other. As one asset is trader for the other, the relative prices of the two assets shift, and the new market rate for both is determined.
+
 All the exchanges are forks from [UniswapV2](https://uniswap.org/blog/uniswap-v2), so they all use the same price formula for trading:
 
  ```
-price = balance_token1 * balance_token2 = constant
+token_a_pool_size * token_b_pool_size = constant_product
  ```
 
 To find the buy price, we add the quantity of pair tokens which we are using as the exchange (adding to the pool), and we substract the quantity of tokens we are buying (removing from the pool):
 
 ```
-buy_price = (pair_balance + qty) / (t1_balance - qty)
+buy_price = (pair_token_balance + qty) / (token_balance - qty)
 ```
 
 For sell price, we do the oppose:

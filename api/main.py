@@ -22,8 +22,8 @@ def _run_menu_options() -> argparse.ArgumentParser:
                         help="Get current balance for a token in a exchange. \
                         Example: bdex -b TOKEN EXCHANGE")
     parser.add_argument('-p', dest='prices', nargs=3,
-                        help="Get sell/buy prices for token pair for all exchanges. \
-                        Example: bdex -p TOKEN_TO_BUY PAIR QUANTITY")
+                        help="Get prices for N tokens on a pool, for all exchanges. \
+                        Example: bdex -p QUANTITY TOKEN PAIR")
     parser.add_argument('-x', dest='arbitrage', action='store_true',
                         help="Search arbitrage opportunities.")
     parser.add_argument('-r', dest='algorithm', nargs=1,
@@ -52,7 +52,7 @@ def run_menu() -> None:
                 exchange not in api.exchanges_address.keys():
             tokens_list = ', '.join([_ for _ in api.tokens_address.keys()])
             ex_list = ', '.join([_ for _ in api.exchanges_address.keys()])
-            print(f'\n🚨 Sorry, {token} or {exchange} not supported')
+            print(f'\n🚨 {token} or {exchange} not supported')
             print(f'🚨 Supported coins: {tokens_list}')
             print(f'🚨 Supported exchanges: {ex_list}\n')
 
@@ -78,23 +78,31 @@ def run_menu() -> None:
                 print(f'    ✅ {token}: {balance}')
 
     elif args.prices:
-        token = args.prices[0].upper()
-        pair_token = args.prices[1].upper()
-        api.set_quantity(args.prices[2])
+        api.set_quantity(args.prices[0])
+        token = args.prices[1].upper()
+        pair_token = args.prices[2].upper()
 
         if token not in api.tokens_address.keys() or \
                 pair_token not in api.tokens_address.keys():
             tokens_list = ", ".join([_ for _ in api.tokens_address.keys()])
-            print(f'\n🚨 Sorry, {token} or {pair_token} not supported')
+            print(f'\n🚨 {token} or {pair_token} not supported')
             print(f'🚨 Supported coins: {tokens_list}\n')
 
         else:
             api.get_all_balances()
             api.get_pair_prices(token, pair_token, api.trading_qty)
-            print(f'\n🪙 {api.trading_qty} {token} ({token}/{pair_token}):\n')
-            for exchange, price in api.current_prices.items():
-                print(f'{exchange}:')
-                print(f'                🔺buy: ${price[0]} 🔻sell: ${price[1]}')
+
+            print(f'\n🪙 Trade {api.trading_qty} ({token}/{pair_token}):\n')
+            for exchange, data in api.current_price_data.items():
+                print(f"✅ {exchange}: {token} price: ${data['current_price']}")
+                print(f"Balance constant: {data['balance_constant']}")
+                if 'buy_price' not in data.keys():
+                    print(f"{data['info']}")
+                    print(f"{token} balance: {data['balance_t1']}")
+                    print(f"{pair_token} balance: {data['balance_t2']}\n")
+                else:
+                    print(f"BUY: ${data['buy_price']}, 🔺{data['impact_buy']}")
+                    print(f"SELL: ${data['sell_price']}, 🔻{data['impact_sell']}\n")
 
     elif args.arbitrage:
         api.get_arbitrage()
