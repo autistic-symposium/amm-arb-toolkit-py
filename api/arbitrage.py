@@ -208,7 +208,6 @@ class ArbitrageAPI(object):
 
     def _calculate_arbitrage_brute_force(self):
 
-        info = None
         win_buy_price = float('inf')
         win_sell_price = 0
         win_buy_exchange = None
