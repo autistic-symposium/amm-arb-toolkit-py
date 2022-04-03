@@ -78,7 +78,7 @@ bdex
 
 <br>
 
-### Checking the latest block
+## Checking the latest block
 
 
 We leverage [Alchemy API endpoint `eth_blockNumber_hex`](https://docs.alchemy.com/alchemy/apis/ethereum/eth_blockNumber_hex) to get the latest block:
@@ -107,7 +107,7 @@ The block number can be checked against [ETHstat](https://ethstats.net/).
 <br>
 
 
-### Getting the token balance for an exchange
+## Getting the token balance for an exchange
 
 We leverage [Alchemy API endpoint `eth_call`](https://docs.alchemy.com/alchemy/apis/ethereum/eth_call) to retrieve the current token balance for a specific exchange:
 
@@ -123,7 +123,7 @@ bdex -b dai uniswap
 <br>
 
 
-### Getting all token balances for all the exchanges
+## Getting all token balances for all the exchanges
 
  We loop over the previous method for a list of tokens and exchanges:
 
@@ -141,7 +141,7 @@ bdex -a
 <br>
 
 
-### [Extra] Getting all token balances for all the exchanges with the web3 Python library
+## [Extra] Getting all token balances for all the exchanges with the web3 Python library
 
 To be able to compare our results from the previous steps, we implemented an alternative way to fetch pair balances utilizing the [Python web3 library](https://web3py.readthedocs.io/en/stable/):
 
@@ -166,7 +166,7 @@ bdex -w
 <br>
 
 
-### Getting trading prices for all the exchanges
+## Getting trading prices for all the exchanges
 
 To get the current price for ETH/DAI in all the exchanges (e.g., as shown in [the projects' dashboards](https://v2.info.uniswap.org/pair/0xa478c2975ab1ea89e8196811f51a7b7ade33eb11)), run:
 
@@ -203,34 +203,86 @@ Result for trading 100 WETH:
 
 <br>
 
-#### How the price is calculated
+### How the price is calculated
 
-An AMM replaces the buy and sell orders in an order book market with a liquidity pool of two assets, both valued relative to each other. As one asset is trader for the other, the relative prices of the two assets shift, and the new market rate for both is determined.
+An AMM replaces the buy and sell orders in an order book market with a liquidity pool of two assets, both valued relative to each other. As one asset is traded for the other, the relative prices of the two assets shift, and the new market rate for both is determined.
+
+The constant product is:
+
+```
+token_a_pool_size * token_b_pool_size = constant_product
+```
 
 All the exchanges are forks from [UniswapV2](https://uniswap.org/blog/uniswap-v2), so they all use the same price formula for trading:
 
  ```
-token_a_pool_size * token_b_pool_size = constant_product
+market_price_token1 = token2_balance / token1_balance
  ```
 
-To find the buy price, we add the quantity of pair tokens which we are using as the exchange (adding to the pool), and we substract the quantity of tokens we are buying (removing from the pool):
+For example, in a pool with `2,000,000 DAI` and `1,000 WETH`, the constant product is `2,000,000,000` and the market price for `WETH` is `$2,000`.
+
+<br>
+
+#### Buy price (e.g., buying WETH in a WETH/DAI pool)
+
+
+To find the buy price for a certain quantity, first, we calculate how much WETH needs to remain in balance to keep the constant product unchanged:
 
 ```
-buy_price = (pair_token_balance + qty) / (token_balance - qty)
+token1_balance_buy = constant_product / (token2_balance + quantity)
 ```
 
-For sell price, we do the oppose:
+Then we calculate how much WETH goes out to keep this constant:
 
 ```
-sell_price = (pair_balance - qty) / (t1_balance + qty)
+ t1_amount_out_buy = token1_balance - token1_balance_buy
 ```
 
+The buy price to reflect this ratio is:
+
+```
+buy_price = quantity / t1_amount_out_buy
+```
+
+<br>
+
+#### Sell price (e.g., selling WETH in a WETH/DAI pool)
+
+To find how much we can sell a certain quantity of WETH for DAI, first, we calculate the ratio of DAI in the new pool, as we add WETH:
+
+```
+token2_balance_buy = constant_product / (token1_balance + quantity)
+```
+
+We then calculate how much DAI will go out:
+
+```
+t2_amount_out_buy = token2_balance + token2_balance_buy
+```
+
+We calculate the DAI balance reflected with the income WETH:
+
+```
+token1_balance_sell = constant_product / (token2_balance - quantity)
+```
+
+And what's the proportion of WETH in the new balance:
+
+```
+t1_amount_in_sell = token1_balance + token1_balance_sell
+```
+
+We can now calculate the sell price to reflect the balance change, keeping the constant:
+
+```
+sell_price = t2_amount_out_buy / t1_amount_in_sell
+```
 
 
 <br>
 
 
-### Getting arbitrage
+## Getting arbitrage
 
 To run the algorithm to search for arbitrage in the supported exchanges, run:
 
@@ -248,7 +300,7 @@ bdex -x
 
 This is a very simple algorithm. Because our set of coins and exchanges is small, brute forcing is not so costly.
 
-📝 TODO: improve this algorithm adding a node walking (graph solution).
+📝 TODO: improve this algorithm by adding a node walking (graph solution).
 
 <br>
 
@@ -277,7 +329,7 @@ Results will be saved into files names `results/<TIME_SAVED>.txt`.
 
 <br>
 
-#### Running in docker
+## Running in docker container
 
 To run the algorithm in a separated container, first [install Docker](https://docs.docker.com/get-docker/). Then build the Docker image:
 
@@ -310,7 +362,7 @@ docker volumes prune
 <br>
 
 
-📝 TODO: add a script to mount results and save in disk after finished running the script.
+📝 TODO: add a script to mount results and save on disk after finished running the script.
 
 <br>
 
