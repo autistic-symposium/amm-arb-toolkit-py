@@ -49,9 +49,14 @@ def open_abi(filepath) -> json:
         logging.error(f'\n🚨 Failed to parse: "{filepath}": {e}')
 
 
-def format_price(price) -> str:
+def format_perc(value) -> str:
 
-    return "{:.2f}".format(round(price, 2))
+    return "%.8f%%" % (100 * value)
+
+
+def format_price(value) -> str:
+
+    return "{:.2f}".format(round(value, 2))
 
 
 def format_path(dir_path, filename) -> str:
@@ -59,9 +64,14 @@ def format_path(dir_path, filename) -> str:
     return os.path.join(dir_path, filename)
 
 
+def get_time_now() -> str:
+
+    return time.strftime("%Y-%m-%d_%H-%M-%S")
+
+
 def format_filename() -> str:
 
-    return "arbitrage_" + time.strftime("%Y-%m-%d_%H-%M-%S") + '.txt'
+    return "arbitrage_" + get_time_now() + '.txt'
 
 
 def save_results(destination, data) -> None:

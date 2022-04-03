@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from api.util import hex_to_int, wei_to_eth, send_request, \
                         craft_url, open_abi, format_price, \
                         save_results, format_path, create_dir, \
-                        format_filename
+                        format_filename, get_time_now, format_perc
 
 
 class ArbitrageAPI(object):
@@ -32,7 +32,7 @@ class ArbitrageAPI(object):
 
         self.current_balances = {}
         self.current_balances_web3 = {}
-        self.current_prices = {}
+        self.current_price_data = {}
         self.arbitrage_result = []
         self.provider_url = None
         self.w3_obj = None
@@ -51,29 +51,18 @@ class ArbitrageAPI(object):
         TRADING_QTY = os.getenv("TRADING_QTY")
         ARBITRAGE_THRESHOLD = os.getenv("ARBITRAGE_THRESHOLD")
         RESULT_DIR = os.getenv("RESULT_DIR")
-        RUN_TIME = os.getenv("RUN_TIME")
+        MIN_HEALTHY_POOL = os.getenv("MIN_HEALTHY_POOL")
 
         if not (bool(ALCHEMY_URL) and bool(ALCHEMY_API_KEY) and
                 bool(TRADING_QTY) and bool(ARBITRAGE_THRESHOLD)
-                and bool(RESULT_DIR) and bool(RUN_TIME)):
-            raise Exception('\n🚨 Please add info to .env file')
+                and bool(RESULT_DIR) and bool(MIN_HEALTHY_POOL)):
+            raise Exception('🚨 Please add info to env file')
 
         self.result_dir = RESULT_DIR
-        self.run_time = RUN_TIME
         self.trading_qty = float(TRADING_QTY)
+        self.min_healthy_pool = MIN_HEALTHY_POOL
         self.arbitrage_threshold = float(ARBITRAGE_THRESHOLD)
         self.provider_url = craft_url(ALCHEMY_URL, ALCHEMY_API_KEY)
-
-    def _calculate_pair_price(self, t1_balance, pair_balance, qty) -> float:
-
-        buy_price = (pair_balance + qty) / (t1_balance - qty)
-        sell_price = (pair_balance - qty) / (t1_balance + qty)
-
-        # TODO: handle smaller quantity better (negative prices)
-        if buy_price < 0:
-            buy_price = 0
-
-        return [format_price(buy_price), format_price(sell_price)]
 
     def _get_balance_for_wallet(self, wallet_address, token_obj) -> float:
 
@@ -144,16 +133,58 @@ class ArbitrageAPI(object):
                 self.current_balances[exchange][token] = \
                     self.get_token_balance(token, exchange)
 
+    def _calculate_price_data(self, token1_bal, token2_bal, qty) -> float:
+
+        CONSTANT_PRODUCT = token1_bal * token2_bal
+        CURRENT_PRICE = token2_bal / token1_bal
+
+        # Calculate buy data
+        token1_bal_buy = CONSTANT_PRODUCT / (token2_bal + qty)
+        t1_amount_out_buy = token1_bal - token1_bal_buy
+        buy_price = qty / t1_amount_out_buy
+        impact_buy = 1 - (CURRENT_PRICE / buy_price)
+
+        # Calculate sell data
+        token2_bal_buy = CONSTANT_PRODUCT / (token1_bal + qty)
+        t2_amount_out_buy = token2_bal + token2_bal_buy
+        token1_bal_sell = CONSTANT_PRODUCT / (token2_bal - qty)
+        t1_amount_in_sell = token1_bal + token1_bal_sell
+        sell_price = t2_amount_out_buy / t1_amount_in_sell
+        impact_sell = 1 - (CURRENT_PRICE / sell_price)
+
+        return [format_price(CURRENT_PRICE), format_price(buy_price),
+                format_price(sell_price), format_perc(impact_buy),
+                format_perc(impact_sell), CONSTANT_PRODUCT]
+
     def get_pair_prices(self, token, pair_token, qty=None) -> None:
 
         qty = qty or self.trading_qty
         for exchange in self.exchanges_address.keys():
 
             token_balance = self.current_balances[exchange][token]
-            pair_balance = self.current_balances[exchange][pair_token]
+            pair_token_balance = self.current_balances[exchange][pair_token]
 
-            self.current_prices[exchange] = \
-                self._calculate_pair_price(token_balance, pair_balance, qty)
+            price_data = self._calculate_price_data(token_balance,
+                                                pair_token_balance, qty)
+
+            if float(price_data[5]) <= float(self.min_healthy_pool):
+                self.current_price_data[exchange] = {
+                    'current_price': price_data[0],
+                    'info': "Pool's unbalanced for at least one token.",
+                    'balance_constant': price_data[5],
+                    'balance_t1': self.current_balances[exchange][token],
+                    'balance_t2': self.current_balances[exchange][pair_token]
+                }
+            else:
+                self.current_price_data[exchange] = {
+                    'current_price': price_data[0],
+                    'buy_price': price_data[1],
+                    'sell_price': price_data[2],
+                    'impact_buy': price_data[3],
+                    'impact_sell': price_data[4],
+                    'info': get_time_now(),
+                    'balance_constant': price_data[5]
+                }
 
     def get_arbitrage(self) -> list:
 
