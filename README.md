@@ -172,18 +172,33 @@ To get the current price for ETH/DAI in all the exchanges (e.g., as shown in [th
 
 
 ```
-bdex -p weth dai 10
+bdex -p 1 weth dai
 ```
 
 <br>
-<img width="489" alt="Screen Shot 2022-04-01 at 10 26 54 AM" src="https://user-images.githubusercontent.com/1130416/161207492-0dcc6910-8c07-426a-b910-2cfd5336a1b5.png">
+
+Result for trading 1 WETH:
+
+<br>
+
+<img width="533" alt="Screen Shot 2022-04-03 at 8 27 55 PM" src="https://user-images.githubusercontent.com/1130416/161438209-6386b71d-94c8-45aa-a60a-ac7a13b2de26.png">
+
+<br>
+
+Result for trading 10 WETH:
+
+<br>
+
+<img width="544" alt="Screen Shot 2022-04-03 at 8 28 20 PM" src="https://user-images.githubusercontent.com/1130416/161438257-5397cd0d-535c-49b8-8db2-3499e04b22bb.png">
+
+<br>
+
+Result for trading 100 WETH:
+
+<br>
 
 
-<img width="499" alt="Screen Shot 2022-04-01 at 10 27 25 AM" src="https://user-images.githubusercontent.com/1130416/161207508-9bd76eb8-4aac-467c-8801-a3211bed7fff.png">
-
-<img width="523" alt="Screen Shot 2022-04-01 at 10 42 57 AM" src="https://user-images.githubusercontent.com/1130416/161209675-3ed3b07b-f16d-4227-9724-64ac733307ed.png">
-
-
+<img width="542" alt="Screen Shot 2022-04-03 at 8 28 46 PM" src="https://user-images.githubusercontent.com/1130416/161438283-4e65810f-d297-4331-9ce2-aa9ef23b3c87.png">
 
 
 <br>
