@@ -78,7 +78,8 @@ def save_results(destination, data) -> None:
 
     try:
         with open(destination, 'w') as f:
-            json.dump(data, f)
+            for line in data:
+                f.write(str(line) + '\n')
     except IOError as e:
         logging.error(f'\n🚨 Could not save {destination}: {e}')
 
