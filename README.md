@@ -169,7 +169,7 @@ bdex -w
 
 ## Getting trading prices for all the exchanges
 
-To get the current price for ETH/DAI in all the exchanges (e.g., as shown in [the projects' dashboards](https://v2.info.uniswap.org/pair/0xa478c2975ab1ea89e8196811f51a7b7ade33eb11)), run:
+To get the current price for `WETH/DAI` in all the exchanges (e.g., as shown in [the projects' dashboards](https://v2.info.uniswap.org/pair/0xa478c2975ab1ea89e8196811f51a7b7ade33eb11)), run:
 
 
 ```bash
@@ -224,16 +224,16 @@ For example, in a pool with `2,000,000 DAI` and `1,000 WETH`, the constant produ
 
 <br>
 
-#### Buy price (e.g., buying WETH in a WETH/DAI pool)
+#### Buy price (e.g., buying `WETH` in a `WETH/DAI` pool)
 
 
-To find the buy price for a certain quantity, first, we calculate how much WETH needs to remain in balance to keep the constant product unchanged:
+To find the buy price for a certain quantity, first, we calculate how much `WETH` needs to remain in balance to keep the constant product unchanged:
 
 ```
 token1_balance_buy = constant_product / (token2_balance + quantity)
 ```
 
-Then we calculate how much WETH goes out to keep this constant:
+Then we calculate how much `WETH` goes out to keep this constant:
 
 ```
  t1_amount_out_buy = token1_balance - token1_balance_buy
@@ -247,27 +247,27 @@ buy_price = quantity / t1_amount_out_buy
 
 <br>
 
-#### Sell price (e.g., selling WETH in a WETH/DAI pool)
+#### Sell price (e.g., selling `WETH` in a `WETH/DAI` pool)
 
-To find how much we can sell a certain quantity of WETH for DAI, first, we calculate the ratio of DAI in the new pool, as we add WETH:
+To find how much we can sell a certain quantity of WETH for `DAI`, first, we calculate the ratio of `DAI` in the new pool, as we add `WETH`:
 
 ```
 token2_balance_buy = constant_product / (token1_balance + quantity)
 ```
 
-We then calculate how much DAI will go out:
+We then calculate how much `DAI` will go out:
 
 ```
 t2_amount_out_buy = token2_balance + token2_balance_buy
 ```
 
-We calculate the DAI balance reflected with the income WETH:
+We calculate the `DAI` balance reflected with the income `WETH`:
 
 ```
 token1_balance_sell = constant_product / (token2_balance - quantity)
 ```
 
-And what's the proportion of WETH in the new balance:
+And what's the proportion of `WETH` in the new balance:
 
 ```
 t1_amount_in_sell = token1_balance + token1_balance_sell

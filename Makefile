@@ -10,6 +10,7 @@ clean:
 	@rm -rf Pipfile.lock
 	@rm -rf .tox
 	@rm -rf venv/lib/python3.9/site-packages/bdex*.egg
+	@rm -rf results/*txt
 
 test:
 	tox

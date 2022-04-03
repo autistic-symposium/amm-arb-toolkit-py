@@ -17,7 +17,7 @@ def _run_menu_options() -> argparse.ArgumentParser:
     parser.add_argument('-a', dest='all_balances', action='store_true',
                         help="Get balance for all tokens/exchanges.")
     parser.add_argument('-w', dest='all_balances_web3', action='store_true',
-                        help="Get balance for all tokens/exchanges (web3 lib).")
+                        help="Get balance for all tokens/exchanges (web3).")
     parser.add_argument('-b', dest='balance', nargs=2,
                         help="Get current balance for a token in a exchange. \
                         Example: bdex -b TOKEN EXCHANGE")
@@ -27,9 +27,9 @@ def _run_menu_options() -> argparse.ArgumentParser:
     parser.add_argument('-x', dest='arbitrage', nargs=1,
                         help="Search arbitrage opportunities for a given quantity. \
                         Example: bdex -x QUANTITY")
-    parser.add_argument('-r', dest='algorithm', nargs=1,
-                        help="Run arbitrage algorithm for TIME minute. \
-                        Example: bdex -r MINUTES")
+    parser.add_argument('-l', dest='loop', nargs=2,
+                        help="Run arbitrage in a loop for a given time and quantity. \
+                        Example: bdex -l MINUTES QUANTITY")
 
     return parser
 
@@ -133,13 +133,12 @@ def run_menu() -> None:
     ########################################
     # Run arbitrage algorithm in a loop
     ########################################
-    elif args.algorithm:
-        time = args.algorithm[0]
+    elif args.loop:
+        runtime = args.loop[0]
+        quantity = args.loop[1]
 
-        print(f'\n✅ Running in a loop of {time} minutes..\n')
-
-        api.run_algorithm(time)
-
+        print(f'\n✅ Running loop of {runtime} minutes for quantity {quantity}...')
+        api.run_arbitrage_loop(runtime, quantity)
         print(f'\n✅ Done. Results saved at {api.result_dir}.\n')
 
     ########################################
