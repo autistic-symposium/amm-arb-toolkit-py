@@ -37,7 +37,6 @@ class ArbitrageAPI(object):
         self.provider_url = None
         self.w3_obj = None
         self.result_dir = None
-        self.trading_qty = 0
         self.arbitrage_threshold = 0
 
         self._load_config()
@@ -48,18 +47,16 @@ class ArbitrageAPI(object):
 
         ALCHEMY_API_KEY = os.getenv("ALCHEMY_API_KEY")
         ALCHEMY_URL = os.getenv("ALCHEMY_URL")
-        TRADING_QTY = os.getenv("TRADING_QTY")
         ARBITRAGE_THRESHOLD = os.getenv("ARBITRAGE_THRESHOLD")
         RESULT_DIR = os.getenv("RESULT_DIR")
         MIN_HEALTHY_POOL = os.getenv("MIN_HEALTHY_POOL")
 
         if not (bool(ALCHEMY_URL) and bool(ALCHEMY_API_KEY) and
-                bool(TRADING_QTY) and bool(ARBITRAGE_THRESHOLD)
-                and bool(RESULT_DIR) and bool(MIN_HEALTHY_POOL)):
+                    bool(ARBITRAGE_THRESHOLD) and bool(RESULT_DIR)
+                    and bool(MIN_HEALTHY_POOL)):
             raise Exception('🚨 Please add info to env file')
 
         self.result_dir = RESULT_DIR
-        self.trading_qty = float(TRADING_QTY)
         self.min_healthy_pool = MIN_HEALTHY_POOL
         self.arbitrage_threshold = float(ARBITRAGE_THRESHOLD)
         self.provider_url = craft_url(ALCHEMY_URL, ALCHEMY_API_KEY)
@@ -85,13 +82,6 @@ class ArbitrageAPI(object):
 
                 self.current_balances_web3[exchange][token] = \
                     self._get_balance_for_wallet(exchange_address, token_obj)
-
-    def set_quantity(self, qty) -> None:
-
-        try:
-            self.trading_qty = float(qty)
-        except ValueError as e:
-            logging.error(f'🚨 Using default quantity for tokens: {e}')
 
     def get_block_number(self) -> dict:
 
@@ -155,7 +145,7 @@ class ArbitrageAPI(object):
         buy_impact = 1 - (CURRENT_PRICE / buy_price)
 
         ###########################
-        #  Calculate BUY data
+        #  Calculate SELL data
         ###########################
 
         # 1) How much DAI to keep the balances constant
@@ -180,82 +170,91 @@ class ArbitrageAPI(object):
                 format_price(sell_price), format_perc(buy_impact),
                 format_perc(sell_impact), CONSTANT_PRODUCT]
 
-    def get_pair_prices(self, token, pair_token, qty=None) -> None:
+    def get_pair_prices(self, token1, token2, quantity) -> None:
 
-        qty = qty or self.trading_qty
+        self.get_balance()
+
         for exchange in self.exchanges_address.keys():
 
-            token_balance = self.current_balances[exchange][token]
-            pair_token_balance = self.current_balances[exchange][pair_token]
+            token_balance = self.current_balances[exchange][token1]
+            pair_token_balance = self.current_balances[exchange][token2]
 
             price_data = self._calculate_price_data(token_balance,
-                                                    pair_token_balance, qty)
+                                            pair_token_balance, quantity)
+
+            self.current_price_data[exchange] = {
+                    'current_price': price_data[0],
+                    'balance_constant': price_data[5],
+                    'token1': token1,
+                    'token2': token2,
+                    'balance_t1': self.current_balances[exchange][token1],
+                    'balance_t2': self.current_balances[exchange][token2]
+            }
+
 
             if float(price_data[5]) <= float(self.min_healthy_pool):
-                self.current_price_data[exchange] = {
-                    'current_price': price_data[0],
+                self.current_price_data[exchange].append({
                     'info': "Pool's unbalanced for at least one token.",
-                    'balance_constant': price_data[5],
-                    'balance_t1': self.current_balances[exchange][token],
-                    'balance_t2': self.current_balances[exchange][pair_token]
-                }
+                })
+
             else:
-                self.current_price_data[exchange] = {
-                    'current_price': price_data[0],
+                self.current_price_data[exchange].append({
                     'buy_price': price_data[1],
                     'sell_price': price_data[2],
                     'buy_impact': price_data[3],
                     'sell_impact': price_data[4],
                     'info': get_time_now(),
-                    'balance_constant': price_data[5]
-                }
+                })
 
-    def get_arbitrage(self) -> list:
 
-        self.get_all_balances()
 
-        # TODO: generalize to any pair input
-        self.get_pair_prices('WETH', 'DAI')
 
-        exchange_list = [item[0] for item in self.current_prices.items()]
-        buy_price = float('inf')
-        sell_price = 0
-        buy_exchange = None
-        sell_exchange = None
-        data = []
+    def get_arbitrage(self, quantity, token1=None, token2=None) -> list:
 
-        while exchange_list:
-            exchange_here = exchange_list.pop()
+        # TODO: handle other tokens (CLI + algorithm)
+        token1 = token1 or 'WETH'
+        token1 = token2 or 'DAI'
 
-            buy_price_here = float(self.current_prices[exchange_here][0])
-            # TODO: handle smaller quantity better (negative price)
-            if buy_price_here < buy_price and buy_price_here > 0:
-                buy_price = buy_price_here
-                buy_exchange = exchange_here
+        self.get_pair_prices(self, token1, token2, quantity)
+
+        win_buy_price = float('inf')
+        win_sell_price = 0
+        win_buy_exchange = None
+        win_sell_exchange = None
+
+        for exchange, data in self.current_prices.items():
+
+            if 'buy_price' not in data.keys():
                 continue
 
-            sell_price_here = float(self.current_prices[exchange_here][1])
-            if sell_price_here > sell_price:
-                sell_price = sell_price_here
-                sell_exchange = exchange_here
+            buy_price_here = float(data['buy_price'])
+            sell_price_here = float(data['sell_price'])
+
+            if buy_price_here < win_buy_price:
+                win_buy_price = buy_price_here
+                win_buy_exchange = exchange
                 continue
 
-        # TODO: re-add options for multiple arbitrages in this loop
-        arbitrage = buy_price_here - sell_price_here
+            if sell_price_here > win_sell_price:
+                win_sell_price = sell_price_here
+                win_sell_exchange = exchange
+                continue
+
+        arbitrage = win_buy_price - win_sell_price
+
         if arbitrage > self.arbitrage_threshold:
-            details = f"Buy at {sell_exchange} at {sell_price} and "
-            details = details + f"sell at {buy_exchange} at {buy_price}"
-            data = [arbitrage, details]
+            info = f"BUY for ${win_buy_price} at {win_buy_exchange} and "
+            info = info + f"SELL for ${win_sell_price} at {win_sell_exchange}"
+            data = [arbitrage, info]
             self.arbitrage_result.append(data)
 
-        # TODO: remove hardcoded DAI (add token name)
-        return f'Arbitrage: {arbitrage} DAI: ' + details
+        return f'Arbitrage: ${arbitrage} ' + info
 
     def run_algorithm(self, runtime) -> None:
 
         results = []
         loop = 0
-        runtime = 60 * runtime
+        runtime = 60 * float(runtime)
         end = time.time() + runtime
 
         while time.time() < end:

@@ -285,10 +285,10 @@ sell_price = t2_amount_out_buy / t1_amount_in_sell
 
 ## Getting arbitrage
 
-To run the algorithm to search for arbitrage in the supported exchanges, run:
+Run an algorithm to search for arbitrage in the supported exchanges for a certain quantity:
 
 ```
-bdex -x
+bdex -x 1000
 ```
 
 <br>
@@ -299,7 +299,7 @@ bdex -x
 <br>
 <br>
 
-This is a very simple algorithm. Because our set of coins and exchanges is small, brute forcing is not so costly.
+
 
 📝 TODO: improve this algorithm by adding a node walking (graph solution).
 

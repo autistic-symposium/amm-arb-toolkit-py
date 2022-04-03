@@ -24,8 +24,9 @@ def _run_menu_options() -> argparse.ArgumentParser:
     parser.add_argument('-p', dest='prices', nargs=3,
                         help="Get prices for N tokens on a pool, for all exchanges. \
                         Example: bdex -p QUANTITY TOKEN PAIR")
-    parser.add_argument('-x', dest='arbitrage', action='store_true',
-                        help="Search arbitrage opportunities.")
+    parser.add_argument('-x', dest='arbitrage', nargs=1,
+                        help="Search arbitrage opportunities for a given quantity. \
+                        Example: bdex -x QUANTITY")
     parser.add_argument('-r', dest='algorithm', nargs=1,
                         help="Run arbitrage algorithm for TIME minute. \
                         Example: bdex -r MINUTES")
@@ -39,11 +40,17 @@ def run_menu() -> None:
     args = parser.parse_args()
     api = ArbitrageAPI()
 
+    ########################################
+    # Get block number
+    ########################################
     if args.current_block:
         eth_blockNumber = api.get_block_number()
         if eth_blockNumber:
             print(f'\n🧱 Current block number: {eth_blockNumber}\n')
 
+    ########################################
+    # Get balance for a token in a exchange
+    ########################################
     elif args.balance:
         token = args.balance[0].upper()
         exchange = args.balance[1].upper()
@@ -61,6 +68,9 @@ def run_menu() -> None:
             if balance:
                 print(f'\n♜ Balance for {token} at {exchange}: {balance}\n')
 
+    ########################################
+    # Get balances for all tokens/exchanges
+    ########################################
     elif args.all_balances:
         api.get_all_balances()
 
@@ -77,52 +87,65 @@ def run_menu() -> None:
             for token, balance in token_dict.items():
                 print(f'    ✅ {token}: {balance}')
 
+    ########################################
+    # Get prices for a token pair for a qty
+    ########################################
     elif args.prices:
-        api.set_quantity(args.prices[0])
-        token = args.prices[1].upper()
-        pair_token = args.prices[2].upper()
+        quantity = args.prices[0]
+        token1 = args.prices[1].upper()
+        token2 = args.prices[2].upper()
 
-        if token not in api.tokens_address.keys() or \
-                pair_token not in api.tokens_address.keys():
+        if token1 not in api.tokens_address.keys() or \
+                token2 not in api.tokens_address.keys():
             tokens_list = ", ".join([_ for _ in api.tokens_address.keys()])
-            print(f'\n🚨 {token} or {pair_token} not supported')
+            print(f'\n🚨 {token1} or {token2} not supported')
             print(f'🚨 Supported coins: {tokens_list}\n')
 
         else:
-            api.get_all_balances()
-            api.get_pair_prices(token, pair_token, api.trading_qty)
+            api.get_pair_prices(token1, token2, quantity)
 
-            print(f'\n🪙 Trading {api.trading_qty} ({token}/{pair_token}):\n')
+            print(f'\n🪙 Trading {quantity} ({token1}/{token2}):\n')
             for exchange, data in api.current_price_data.items():
                 print(f"✅ {exchange}:")
                 print(f"MARKET: ${data['current_price']}")
                 if 'buy_price' not in data.keys():
                     print(f"{data['info']}")
-                    print(f"{token} balance: {data['balance_t1']}")
-                    print(f"{pair_token} balance: {data['balance_t2']}\n")
+                    print(f"{token1} balance: {data['balance_t1']}")
+                    print(f"{token2} balance: {data['balance_t2']}\n")
                 else:
                     print(f"BUY:    ${data['buy_price']}, 🔺{data['buy_impact']}")
                     print(f"SELL:   ${data['sell_price']}, 🔻{data['sell_impact']}\n")
 
+    ########################################
+    # Run arbitrage algorithm once
+    ########################################
     elif args.arbitrage:
-        api.get_arbitrage()
+        quantity = args.arbitrage[0]
+        api.get_arbitrage(quantity)
 
         if api.arbitrage_result:
-            print(f'\n✅ Found these opportunities (qty: {api.trading_qty}):\n')
+            print(f'\n✅ Found these opportunities (qty: {quantity} WETH):\n')
             for data in api.arbitrage_result:
-                print(f'🤑 profit: {data[0]} DAI')
-                print(f'  details: {data[1]}\n')
+                print(f'🤑 Profit: ${data[0]} DAI')
+                print(f'   Details: {data[1]}\n')
         else:
             print('\n😭 No arbitrage found.\n')
 
+    ########################################
+    # Run arbitrage algorithm in a loop
+    ########################################
     elif args.algorithm:
+        time = args.algorithm[0]
 
-        print(f'\n✅ Running the in a loop of {args.algorithm[0]} minutes..\n')
+        print(f'\n✅ Running the in a loop of {time} minutes..\n')
 
-        api.run_algorithm(float(args.algorithm[0]))
+        api.run_algorithm(time)
 
         print(f'\n✅ Done. Results saved at {api.result_dir}.\n')
 
+    ########################################
+    # Print help
+    ########################################
     else:
         parser.print_help(sys.stderr)
 
