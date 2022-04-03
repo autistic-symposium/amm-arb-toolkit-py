@@ -243,7 +243,7 @@ class ArbitrageAPI(object):
 
     def get_arbitrage(self, quantity, token1=None, token2=None):
 
-        # TODO: handle other tokens (CLI + algorithm)
+        # TODO: handle other types of tokens (CLI + algorithm)
         token1 = token1 or 'WETH'
         token2 = token2 or 'DAI'
 
