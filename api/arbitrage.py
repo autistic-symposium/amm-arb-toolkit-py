@@ -133,28 +133,52 @@ class ArbitrageAPI(object):
                 self.current_balances[exchange][token] = \
                     self.get_token_balance(token, exchange)
 
-    def _calculate_price_data(self, token1_bal, token2_bal, qty) -> float:
+    def _calculate_price_data(self, t1_balance, t2_balance, qty) -> float:
 
-        CONSTANT_PRODUCT = token1_bal * token2_bal
-        CURRENT_PRICE = token2_bal / token1_bal
+        CONSTANT_PRODUCT = t1_balance * t2_balance
+        CURRENT_PRICE = t2_balance / t1_balance
 
-        # Calculate buy data
-        token1_bal_buy = CONSTANT_PRODUCT / (token2_bal + qty)
-        t1_amount_out_buy = token1_bal - token1_bal_buy
+        ###########################
+        #  Calculate BUY data
+        ###########################
+
+        # 1) How much WETH needs to remain in balance to keep the constant
+        token1_balance_buy = CONSTANT_PRODUCT / (t2_balance + qty)
+
+        # 2) How much WETH goes out to keep the constant
+        t1_amount_out_buy = t1_balance - token1_balance_buy
+
+        # 3) Buy price to reflect the balances change
         buy_price = qty / t1_amount_out_buy
-        impact_buy = 1 - (CURRENT_PRICE / buy_price)
 
-        # Calculate sell data
-        token2_bal_buy = CONSTANT_PRODUCT / (token1_bal + qty)
-        t2_amount_out_buy = token2_bal + token2_bal_buy
-        token1_bal_sell = CONSTANT_PRODUCT / (token2_bal - qty)
-        t1_amount_in_sell = token1_bal + token1_bal_sell
+        # 4) Difference of buy price to current price
+        buy_impact = 1 - (CURRENT_PRICE / buy_price)
+
+        ###########################
+        #  Calculate BUY data
+        ###########################
+
+        # 1) How much DAI to keep the balances constant
+        token2_balance_buy = CONSTANT_PRODUCT / (t1_balance + qty)
+
+        # 2) How much DAI goes out that constant
+        t2_amount_out_buy = t2_balance + token2_balance_buy
+
+        # 3) How the DAI balance reflects with the income WETH
+        token1_balance_sell = CONSTANT_PRODUCT / (t2_balance - qty)
+
+        # 4) The proportion of WETH in the new balance:
+        t1_amount_in_sell = t1_balance + token1_balance_sell
+
+        # 5) Sell price to reflect the balances change
         sell_price = t2_amount_out_buy / t1_amount_in_sell
-        impact_sell = 1 - (CURRENT_PRICE / sell_price)
+
+        # 6) Difference of sell price to current price
+        sell_impact = 1 - (CURRENT_PRICE / sell_price)
 
         return [format_price(CURRENT_PRICE), format_price(buy_price),
-                format_price(sell_price), format_perc(impact_buy),
-                format_perc(impact_sell), CONSTANT_PRODUCT]
+                format_price(sell_price), format_perc(buy_impact),
+                format_perc(sell_impact), CONSTANT_PRODUCT]
 
     def get_pair_prices(self, token, pair_token, qty=None) -> None:
 
@@ -165,7 +189,7 @@ class ArbitrageAPI(object):
             pair_token_balance = self.current_balances[exchange][pair_token]
 
             price_data = self._calculate_price_data(token_balance,
-                                                pair_token_balance, qty)
+                                                    pair_token_balance, qty)
 
             if float(price_data[5]) <= float(self.min_healthy_pool):
                 self.current_price_data[exchange] = {
@@ -180,8 +204,8 @@ class ArbitrageAPI(object):
                     'current_price': price_data[0],
                     'buy_price': price_data[1],
                     'sell_price': price_data[2],
-                    'impact_buy': price_data[3],
-                    'impact_sell': price_data[4],
+                    'buy_impact': price_data[3],
+                    'sell_impact': price_data[4],
                     'info': get_time_now(),
                     'balance_constant': price_data[5]
                 }

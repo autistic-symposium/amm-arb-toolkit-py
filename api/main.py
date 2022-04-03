@@ -92,17 +92,17 @@ def run_menu() -> None:
             api.get_all_balances()
             api.get_pair_prices(token, pair_token, api.trading_qty)
 
-            print(f'\n🪙 Trade {api.trading_qty} ({token}/{pair_token}):\n')
+            print(f'\n🪙 Trading {api.trading_qty} ({token}/{pair_token}):\n')
             for exchange, data in api.current_price_data.items():
-                print(f"✅ {exchange}: {token} price: ${data['current_price']}")
-                print(f"Balance constant: {data['balance_constant']}")
+                print(f"✅ {exchange}:")
+                print(f"MARKET: ${data['current_price']}")
                 if 'buy_price' not in data.keys():
                     print(f"{data['info']}")
                     print(f"{token} balance: {data['balance_t1']}")
                     print(f"{pair_token} balance: {data['balance_t2']}\n")
                 else:
-                    print(f"BUY: ${data['buy_price']}, 🔺{data['impact_buy']}")
-                    print(f"SELL: ${data['sell_price']}, 🔻{data['impact_sell']}\n")
+                    print(f"BUY:    ${data['buy_price']}, 🔺{data['buy_impact']}")
+                    print(f"SELL:   ${data['sell_price']}, 🔻{data['sell_impact']}\n")
 
     elif args.arbitrage:
         api.get_arbitrage()
