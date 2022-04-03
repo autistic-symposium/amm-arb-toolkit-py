@@ -15,9 +15,9 @@ def _run_menu_options() -> argparse.ArgumentParser:
     parser.add_argument('-c', dest='current_block', action='store_true',
                         help="Get current block nunber.")
     parser.add_argument('-a', dest='all_balances', action='store_true',
-                        help="Get balance for all tokens and exchanges.")
+                        help="Get balance for all tokens/exchanges.")
     parser.add_argument('-w', dest='all_balances_web3', action='store_true',
-                        help="Get balance for all tokens/exchanges (web3).")
+                        help="Get balance for all tokens/exchanges (web3 lib).")
     parser.add_argument('-b', dest='balance', nargs=2,
                         help="Get current balance for a token in a exchange. \
                         Example: bdex -b TOKEN EXCHANGE")
@@ -123,7 +123,7 @@ def run_menu() -> None:
         quantity = args.arbitrage[0]
         api.get_arbitrage(quantity)
 
-        if api.arbitrage_result is not None:
+        if api.arbitrage_result:
             print(f'\n✅ Found these opportunities (qty: {quantity} WETH):\n')
             print(f"🤑 Profit: ${api.arbitrage_result['arbitrage']} DAI")
             print(f"   Details: {api.arbitrage_result['info']}\n")
