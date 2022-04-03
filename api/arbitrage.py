@@ -206,7 +206,7 @@ class ArbitrageAPI(object):
                     'info': get_time_now(),
                 })
 
-    def _calculate_arbitrage_brute_force(self):
+    def _calculate_arbitrage_brute_force(self) -> None:
 
         win_buy_price = float('inf')
         win_sell_price = 0
@@ -250,22 +250,18 @@ class ArbitrageAPI(object):
 
     def run_algorithm(self, runtime) -> None:
 
-        results = []
-        loop = 0
+        loop_num = 0
         runtime = 60 * float(runtime)
         end = time.time() + runtime
 
         while time.time() < end:
+            print(f'Loop {loop_num}')
+            self._calculate_arbitrage_brute_force()
+            loop_num = loop_num + 1
 
-            data = self.get_arbitrage()
-            if data:
-                print(f'    Loop {loop}: {data}')
-                results.append(data)
-            loop += loop + 1
-
-            time.sleep(5)
+            time.sleep(60)
 
         create_dir(self.result_dir)
         destination = format_path(self.result_dir, format_filename())
 
-        save_results(destination, results)
+        save_results(destination, self.arbitrage_result)

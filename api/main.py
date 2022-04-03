@@ -136,7 +136,7 @@ def run_menu() -> None:
     elif args.algorithm:
         time = args.algorithm[0]
 
-        print(f'\n✅ Running the in a loop of {time} minutes..\n')
+        print(f'\n✅ Running in a loop of {time} minutes..\n')
 
         api.run_algorithm(time)
 
