@@ -135,25 +135,26 @@ class ArbitrageAPI(object):
 
     def _calculate_price_data(self, token1_bal, token2_bal, qty) -> float:
 
-        constant_product = token1_bal * token2_bal
-        current_price = token2_bal / token1_bal
+        CONSTANT_PRODUCT = token1_bal * token2_bal
+        CURRENT_PRICE = token2_bal / token1_bal
 
         # Calculate buy data
-        token1_bal_buy = constant_product / (token2_bal + qty)
-        amount_out_buy = token1_bal - token1_bal_buy
-        buy_price = qty / amount_out_buy
-        impact_buy = 1 - (current_price / buy_price)
-
+        token1_bal_buy = CONSTANT_PRODUCT / (token2_bal + qty)
+        t1_amount_out_buy = token1_bal - token1_bal_buy
+        buy_price = qty / t1_amount_out_buy
+        impact_buy = 1 - (CURRENT_PRICE / buy_price)
 
         # Calculate sell data
-        token1_bal_sell = constant_product / (token1_bal + qty)
-        amount_out_sell = token2_bal - token1_bal_sell
-        sell_price = qty / amount_out_sell
-        impact_sell = 1 - (current_price / sell_price)
+        token2_bal_buy = CONSTANT_PRODUCT / (token1_bal + qty)
+        t2_amount_out_buy = token2_bal + token2_bal_buy
+        token1_bal_sell = CONSTANT_PRODUCT / (token2_bal - qty)
+        t1_amount_in_sell = token1_bal + token1_bal_sell
+        sell_price = t2_amount_out_buy / t1_amount_in_sell
+        impact_sell = 1 - (CURRENT_PRICE / sell_price)
 
-        return [format_price(current_price), format_price(buy_price),
+        return [format_price(CURRENT_PRICE), format_price(buy_price),
                 format_price(sell_price), format_perc(impact_buy),
-                format_perc(impact_sell), constant_product]
+                format_perc(impact_sell), CONSTANT_PRODUCT]
 
     def get_pair_prices(self, token, pair_token, qty=None) -> None:
 
