@@ -33,7 +33,7 @@ class ArbitrageAPI(object):
         self.current_balances = {}
         self.current_balances_web3 = {}
         self.current_price_data = {}
-        self.arbitrage_result = []
+        self.arbitrage_result = {}
         self.provider_url = None
         self.w3_obj = None
         self.result_dir = None
@@ -52,8 +52,8 @@ class ArbitrageAPI(object):
         MIN_HEALTHY_POOL = os.getenv("MIN_HEALTHY_POOL")
 
         if not (bool(ALCHEMY_URL) and bool(ALCHEMY_API_KEY) and
-                    bool(ARBITRAGE_THRESHOLD) and bool(RESULT_DIR)
-                    and bool(MIN_HEALTHY_POOL)):
+                bool(ARBITRAGE_THRESHOLD) and bool(RESULT_DIR)
+                and bool(MIN_HEALTHY_POOL)):
             raise Exception('🚨 Please add info to env file')
 
         self.result_dir = RESULT_DIR
@@ -180,7 +180,8 @@ class ArbitrageAPI(object):
             token2_balance = self.current_balances[exchange][token2]
 
             price_data = self._calculate_price_data(token1_balance,
-                                    token2_balance, float(quantity))
+                                                    token2_balance,
+                                                    float(quantity))
 
             self.current_price_data[exchange] = {
                     'current_price': price_data[0],
@@ -205,8 +206,9 @@ class ArbitrageAPI(object):
                     'info': get_time_now(),
                 })
 
-    def _calculate_arbitrage_brute_force(self) -> str:
+    def _calculate_arbitrage_brute_force(self):
 
+        info = None
         win_buy_price = float('inf')
         win_sell_price = 0
         win_buy_exchange = None
@@ -223,29 +225,29 @@ class ArbitrageAPI(object):
             if buy_price_here < win_buy_price:
                 win_buy_price = buy_price_here
                 win_buy_exchange = exchange
+                continue
 
-            elif sell_price_here > win_sell_price:
+            if sell_price_here > win_sell_price:
                 win_sell_price = sell_price_here
                 win_sell_exchange = exchange
+                continue
 
         arbitrage = win_buy_price - win_sell_price
 
         if arbitrage > self.arbitrage_threshold:
-            info = f"BUY for ${win_buy_price} at {win_buy_exchange} and "
-            info = info + f"SELL for ${win_sell_price} at {win_sell_exchange}"
-            data = [format_price(arbitrage), info]
-            self.arbitrage_result.append(data)
+            info_buy = f"BUY for ${win_buy_price} at {win_buy_exchange} and "
+            info_sell = f"SELL for ${win_sell_price} at {win_sell_exchange}"
+            self.arbitrage_result['info'] = info_buy + info_sell
+            self.arbitrage_result['arbitrage'] = format_price(arbitrage)
 
-        return f'Arbitrage: ${arbitrage} ' + info
-
-    def get_arbitrage(self, quantity, token1=None, token2=None) -> str:
+    def get_arbitrage(self, quantity, token1=None, token2=None):
 
         # TODO: handle other tokens (CLI + algorithm)
         token1 = token1 or 'WETH'
         token2 = token2 or 'DAI'
 
         self.get_pair_prices(token1, token2, quantity)
-        return self._calculate_arbitrage_brute_force()
+        self._calculate_arbitrage_brute_force()
 
     def run_algorithm(self, runtime) -> None:
 

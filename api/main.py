@@ -123,11 +123,10 @@ def run_menu() -> None:
         quantity = args.arbitrage[0]
         api.get_arbitrage(quantity)
 
-        if api.arbitrage_result:
+        if api.arbitrage_result is not None:
             print(f'\n✅ Found these opportunities (qty: {quantity} WETH):\n')
-            for data in api.arbitrage_result:
-                print(f'🤑 Profit: ${data[0]} DAI')
-                print(f'   Details: {data[1]}\n')
+            print(f"🤑 Profit: ${api.arbitrage_result['arbitrage']} DAI")
+            print(f"   Details: {api.arbitrage_result['info']}\n")
         else:
             print('\n😭 No arbitrage found.\n')
 
