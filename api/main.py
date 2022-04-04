@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- encoding: utf-8 -*-
-# Entry point for KeeperDAO arbitrage exercise
+# Entry point for bdex
 
 import sys
 import argparse
@@ -49,7 +49,7 @@ def run_menu() -> None:
             print(f'\n🧱 Current block number: {eth_blockNumber}\n')
 
     ########################################
-    # Get balance for a token in a exchange
+    # Get balance for a token in an exchange
     ########################################
     elif args.balance:
         token = args.balance[0].upper()
@@ -138,7 +138,7 @@ def run_menu() -> None:
         runtime = args.loop[0]
         quantity = args.loop[1]
 
-        print(f'\n⏳ Running loop of {runtime} minute(s) for quantity {quantity}')
+        print(f'\n⏳ Running loop of {runtime} minute(s) for qty: {quantity}')
         api.run_arbitrage_loop(runtime, quantity)
         print(f'✅ Done. Results saved at {api.result_dir}.\n')
 
