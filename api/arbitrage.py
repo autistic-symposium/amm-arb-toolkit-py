@@ -236,7 +236,8 @@ class ArbitrageAPI(object):
 
         arbitrage = win_buy_price - win_sell_price
 
-        if arbitrage > self.arbitrage_threshold:
+        if arbitrage > self.arbitrage_threshold and win_sell_exchange \
+                is not None and win_buy_price is not None:
             info_buy = f"BUY for ${win_buy_price} at {win_buy_exchange} and "
             info_sell = f"SELL for ${win_sell_price} at {win_sell_exchange}"
             self.arbitrage_result.append({
@@ -246,7 +247,6 @@ class ArbitrageAPI(object):
 
     def get_arbitrage(self, quantity, token1=None, token2=None):
 
-        # TODO: handle other types of tokens (CLI + algorithm)
         token1 = token1 or 'WETH'
         token2 = token2 or 'DAI'
 
