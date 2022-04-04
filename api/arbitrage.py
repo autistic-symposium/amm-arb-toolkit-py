@@ -33,11 +33,12 @@ class ArbitrageAPI(object):
         self.current_balances = {}
         self.current_balances_web3 = {}
         self.current_price_data = {}
-        self.arbitrage_result = {}
+        self.arbitrage_result = []
         self.provider_url = None
         self.w3_obj = None
         self.result_dir = None
-        self.arbitrage_threshold = 0
+        self.arbitrage_threshold = None
+        self.sleep_time = None
 
         self._load_config()
 
@@ -50,15 +51,17 @@ class ArbitrageAPI(object):
         ARBITRAGE_THRESHOLD = os.getenv("ARBITRAGE_THRESHOLD")
         RESULT_DIR = os.getenv("RESULT_DIR")
         MIN_HEALTHY_POOL = os.getenv("MIN_HEALTHY_POOL")
+        SLEEP_TIME = os.getenv("SLEEP_TIME")
 
         if not (bool(ALCHEMY_URL) and bool(ALCHEMY_API_KEY) and
                 bool(ARBITRAGE_THRESHOLD) and bool(RESULT_DIR)
-                and bool(MIN_HEALTHY_POOL)):
+                and bool(MIN_HEALTHY_POOL) and bool(SLEEP_TIME)):
             raise Exception('🚨 Please add info to env file')
 
         self.result_dir = RESULT_DIR
         self.min_healthy_pool = MIN_HEALTHY_POOL
         self.arbitrage_threshold = float(ARBITRAGE_THRESHOLD)
+        self.sleep_time = float(SLEEP_TIME)
         self.provider_url = craft_url(ALCHEMY_URL, ALCHEMY_API_KEY)
 
     def _get_balance_for_wallet(self, wallet_address, token_obj) -> float:
@@ -237,10 +240,10 @@ class ArbitrageAPI(object):
                 is not None and win_buy_price is not None:
             info_buy = f"BUY for ${win_buy_price} at {win_buy_exchange} and "
             info_sell = f"SELL for ${win_sell_price} at {win_sell_exchange}"
-            self.arbitrage_result[get_time_now()] = {
+            self.arbitrage_result.append({
                 'info': info_buy + info_sell,
                 'arbitrage': format_price(arbitrage)
-            }
+            })
 
     def get_arbitrage(self, quantity, token1=None, token2=None):
 
@@ -252,11 +255,11 @@ class ArbitrageAPI(object):
 
     def run_arbitrage_loop(self, runtime, quantity) -> None:
 
-        end = time.time() + 60 * float(runtime)
+        end = time.time() + float(runtime) * 60
 
         while time.time() < end:
             self.get_arbitrage(quantity)
-            # time.sleep(60)
+            time.sleep(self.sleep_time)
 
         create_dir(self.result_dir)
         destination = format_path(self.result_dir, format_filename())

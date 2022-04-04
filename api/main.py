@@ -124,9 +124,10 @@ def run_menu() -> None:
         api.get_arbitrage(quantity)
 
         if api.arbitrage_result:
+            result = api.arbitrage_result.pop()
             print(f'\n✅ Found these opportunities (qty: {quantity} WETH):\n')
-            print(f"🤑 Profit: ${api.arbitrage_result['arbitrage']} DAI")
-            print(f"   Details: {api.arbitrage_result['info']}\n")
+            print(f"🤑 Profit: ${result['arbitrage']} DAI")
+            print(f"   Details: {result['info']}\n")
         else:
             print('\n😭 No arbitrage found.\n')
 
@@ -134,12 +135,12 @@ def run_menu() -> None:
     # Run arbitrage algorithm in a loop
     ########################################
     elif args.loop:
-        time = args.loop[0]
+        runtime = args.loop[0]
         quantity = args.loop[1]
 
-        print(f'\n✅ Running loop of {time} minutes for quantity {quantity}')
-        api.run_arbitrage_loop(time, quantity)
-        print(f'\n✅ Done. Results saved at {api.result_dir}.\n')
+        print(f'\n⏳ Running loop of {runtime} minutes for quantity {quantity}')
+        api.run_arbitrage_loop(runtime, quantity)
+        print(f'✅ Done. Results saved at {api.result_dir}.\n')
 
     ########################################
     # Print help
