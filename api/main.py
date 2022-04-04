@@ -124,8 +124,8 @@ def run_menu() -> None:
         api.get_arbitrage(quantity)
 
         if api.arbitrage_result:
+            print(f'\n✅ Found these opportunities (qty: {quantity} WETH):\n')
             for result in api.arbitrage_result:
-                print(f'\n✅ Found these opportunities (qty: {quantity} WETH):\n')
                 print(f"🤑 Profit: ${result['arbitrage']} DAI")
                 print(f"BUY: ${result['buy_price']} @ {result['buy_exchange']}")
                 print(f"SELL: ${result['sell_price']} @ {result['sell_exchange']}\n")
