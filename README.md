@@ -290,10 +290,34 @@ Run an algorithm to search for arbitrage in the supported exchanges for a certai
 bdex -x QUANTITY
 ```
 
+
 <br>
 
-<img width="538" alt="Screen Shot 2022-04-03 at 11 42 09 PM" src="https://user-images.githubusercontent.com/1130416/161447441-dd7126c9-b307-4ded-bbea-42c2a5e60edb.png">
+Arbitrage opportunies for 10 `WETH`:
 
+<br>
+<img width="495" alt="Screen Shot 2022-04-04 at 6 02 09 PM" src="https://user-images.githubusercontent.com/1130416/161561281-c49beaec-c0fe-4022-b323-a795b0ebb92a.png">
+
+
+<br>
+
+Arbitrage opportunies for 1 `WETH`:
+
+<br>
+
+<img width="464" alt="Screen Shot 2022-04-04 at 6 02 31 PM" src="https://user-images.githubusercontent.com/1130416/161561271-94c2c75f-fc27-48bc-a29f-a8b60a692585.png">
+
+<br>
+
+
+Arbitrage opportunies for 0.01 `WETH`:
+
+<br>
+<img width="507" alt="Screen Shot 2022-04-04 at 6 03 20 PM" src="https://user-images.githubusercontent.com/1130416/161561257-aab365b9-d04b-4754-948b-4f2894aeb03e.png">
+
+
+
+<br>
 
 
 <br>
@@ -323,42 +347,16 @@ Results are saved into `results/<arbitrage_TIMESTAMP>.txt`.
 
 <br>
 
-Here is a sample of the results of this algorithm running for 100 minutes for trading 100 `WETH`:
+Here is a sample of the results running this algorithm for 100 minutes for trading 1 `WETH`:
 
 ```
-{'info': 'BUY for $3497.72 at SHEBASWAP and SELL for $3477.39 at SUSHISWAP', 'arbitrage': '20.33'}
-{'info': 'BUY for $3503.86 at SUSHISWAP and SELL for $3437.35 at SHEBASWAP', 'arbitrage': '66.51'}
-{'info': 'BUY for $3503.92 at SHEBASWAP and SELL for $3485.1 at SUSHISWAP', 'arbitrage': '18.82'}
-{'info': 'BUY for $3523.32 at UNISWAP and SELL for $3500.11 at SUSHISWAP', 'arbitrage': '23.21'}
-{'info': 'BUY for $3526.93 at SUSHISWAP and SELL for $3460.71 at SHEBASWAP', 'arbitrage': '66.22'}
-{'info': 'BUY for $3527.07 at SUSHISWAP and SELL for $3460.71 at SHEBASWAP', 'arbitrage': '66.36'}
-{'info': 'BUY for $3527.96 at SHEBASWAP and SELL for $3511.09 at SUSHISWAP', 'arbitrage': '16.87'}
-{'info': 'BUY for $3530.13 at SHEBASWAP and SELL for $3511.09 at SUSHISWAP', 'arbitrage': '19.04'}
-{'info': 'BUY for $3532.29 at SHEBASWAP and SELL for $3511.09 at SUSHISWAP', 'arbitrage': '21.20'}
-{'info': 'BUY for $3532.29 at SHEBASWAP and SELL for $3511.09 at SUSHISWAP', 'arbitrage': '21.20'}
-{'info': 'BUY for $3532.29 at SHEBASWAP and SELL for $3515.7 at SUSHISWAP', 'arbitrage': '16.59'}
-{'info': 'BUY for $3532.29 at SHEBASWAP and SELL for $3514.69 at SUSHISWAP', 'arbitrage': '17.60'}
-{'info': 'BUY for $3532.29 at SHEBASWAP and SELL for $3514.69 at SUSHISWAP', 'arbitrage': '17.60'}
-{'info': 'BUY for $3538.12 at UNISWAP and SELL for $3514.69 at SUSHISWAP', 'arbitrage': '23.43'}
-{'info': 'BUY for $3538.12 at UNISWAP and SELL for $3523.08 at SUSHISWAP', 'arbitrage': '15.04'}
-{'info': 'BUY for $3549.44 at SHEBASWAP and SELL for $3531.53 at SUSHISWAP', 'arbitrage': '17.91'}
-{'info': 'BUY for $3551.94 at UNISWAP and SELL for $3531.53 at SUSHISWAP', 'arbitrage': '20.41'}
-{'info': 'BUY for $3558.56 at SUSHISWAP and SELL for $3499.37 at SHEBASWAP', 'arbitrage': '59.19'}
-{'info': 'BUY for $3565.29 at SUSHISWAP and SELL for $3499.37 at SHEBASWAP', 'arbitrage': '65.92'}
-{'info': 'BUY for $3565.29 at SUSHISWAP and SELL for $3499.37 at SHEBASWAP', 'arbitrage': '65.92'}
-{'info': 'BUY for $3563.13 at UNISWAP and SELL for $3538.18 at SUSHISWAP', 'arbitrage': '24.95'}
-{'info': 'BUY for $3563.13 at UNISWAP and SELL for $3537.9 at SUSHISWAP', 'arbitrage': '25.23'}
-{'info': 'BUY for $3563.13 at UNISWAP and SELL for $3537.82 at SUSHISWAP', 'arbitrage': '25.31'}
-{'info': 'BUY for $3563.78 at UNISWAP and SELL for $3537.82 at SUSHISWAP', 'arbitrage': '25.96'}
-{'info': 'BUY for $3563.27 at UNISWAP and SELL for $3537.82 at SUSHISWAP', 'arbitrage': '25.45'}
-{'info': 'BUY for $3550.51 at UNISWAP and SELL for $3524.36 at SUSHISWAP', 'arbitrage': '26.15'}
-{'info': 'BUY for $3550.51 at UNISWAP and SELL for $3524.31 at SUSHISWAP', 'arbitrage': '26.20'}
-{'info': 'BUY for $3551.26 at SUSHISWAP and SELL for $3486.79 at SHEBASWAP', 'arbitrage': '64.47'}
-{'info': 'BUY for $3541.84 at SHEBASWAP and SELL for $3524.31 at SUSHISWAP', 'arbitrage': '17.53'}
-{'info': 'BUY for $3541.81 at SUSHISWAP and SELL for $3474.2 at SHEBASWAP', 'arbitrage': '67.61'}
-{'info': 'BUY for $3539.29 at UNISWAP and SELL for $3514.96 at SUSHISWAP', 'arbitrage': '24.33'}
-{'info': 'BUY for $3535.69 at SHEBASWAP and SELL for $3514.96 at SUSHISWAP', 'arbitrage': '20.73'}
-{'info': 'BUY for $3528.53 at SUSHISWAP and SELL for $3462.25 at SHEBASWAP', 'arbitrage': '66.28'}
+{'buy_exchange': 'SUSHISWAP', 'sell_exchange': 'UNISWAP', 'arbitrage': '7.01', 'buy_price': 3475.14, 'sell_price': 3482.15}
+{'buy_exchange': 'SUSHISWAP', 'sell_exchange': 'SHEBASWAP', 'arbitrage': '4.27', 'buy_price': 3475.14, 'sell_price': 3479.41}
+{'buy_exchange': 'SHEBASWAP', 'sell_exchange': 'UNISWAP', 'arbitrage': '2.06', 'buy_price': 3480.09, 'sell_price': 3482.15}
+{'buy_exchange': 'CROSWAP', 'sell_exchange': 'UNISWAP', 'arbitrage': '13.06', 'buy_price': 3469.09, 'sell_price': 3482.15}
+{'buy_exchange': 'CROSWAP', 'sell_exchange': 'SUSHISWAP', 'arbitrage': '5.79', 'buy_price': 3469.09, 'sell_price': 3474.88}
+{'buy_exchange': 'CROSWAP', 'sell_exchange': 'SHEBASWAP', 'arbitrage': '10.32', 'buy_price': 3469.09, 'sell_price': 3479.41}
+...
 ```
 
 <br>

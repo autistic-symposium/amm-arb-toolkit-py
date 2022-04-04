@@ -29,7 +29,7 @@ def send_request(url, data=None, params=None) -> dict:
     if r.status_code == 200:
         return r.json()
     else:
-        logging.error(f'\n🚨 Query failed: HTTP code {r.status_code}')
+        logging.error(f'🚨 Query failed: HTTP code {r.status_code}')
 
 
 def wei_to_eth(num) -> float:
