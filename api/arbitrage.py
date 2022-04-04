@@ -18,10 +18,12 @@ class ArbitrageAPI(object):
 
     def __init__(self) -> None:
 
+        # Smart constracts for supoorted tokens
         self.tokens_address = {
             'WETH': '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
             'DAI': '0x6b175474e89094c44da98b954eedeac495271d0f'
         }
+        # Address for supported exchanges
         self.exchanges_address = {
             'UNISWAP': '0xa478c2975ab1ea89e8196811f51a7b7ade33eb11',
             'SUSHISWAP': '0xc3d03e4f041fd4cd388c549ee2a29a9e5075882f',
@@ -30,6 +32,7 @@ class ArbitrageAPI(object):
             'CROSWAP': '0x60a26d69263ef43e9a68964ba141263f19d71d51'
         }
 
+        # In-memory data for this API
         self.current_balances = {}
         self.current_balances_web3 = {}
         self.current_price_data = {}
@@ -39,6 +42,7 @@ class ArbitrageAPI(object):
 
     @classmethod
     def _load_config(self) -> None:
+        """Load and set enviroment variables."""
 
         load_dotenv(Path('.') / '.env')
 
@@ -60,29 +64,35 @@ class ArbitrageAPI(object):
         self.sleep_time = float(SLEEP_TIME)
         self.provider_url = craft_url(ALCHEMY_URL, ALCHEMY_API_KEY)
 
-    def _get_balance_for_wallet(self, address, token_obj, w3_obj) -> float:
+    def _get_balance_for_wallet(self, address, token_obj, w3) -> float:
+        """Return the balance in eth of a token in a wallet."""
 
         balance_wei = token_obj.functions.balanceOf(address).call()
-        return float(w3_obj.fromWei(balance_wei, 'ether'))
+        return float(w3.fromWei(balance_wei, 'ether'))
 
     def get_balance_through_web3_lib(self) -> None:
+        """"
+            Loop over supported exchanges to find tokens balance using
+            Python's web3 library (alternative case).
+        """
 
-        w3_obj = Web3(Web3.HTTPProvider(self.provider_url))
+        w3 = Web3(Web3.HTTPProvider(self.provider_url))
 
         for exchange, contract in self.exchanges_address.items():
             self.current_balances_web3[exchange] = {}
-            exchange_address = w3_obj.toChecksumAddress(contract)
+            exchange_add = w3.toChecksumAddress(contract)
 
             for token, contract in self.tokens_address.items():
 
                 abi = open_abi(f'./docs/{token}-abi.json')
-                address = w3_obj.toChecksumAddress(contract)
-                token_obj = w3_obj.eth.contract(address=address, abi=abi)
+                address = w3.toChecksumAddress(contract)
+                token_obj = w3.eth.contract(address=address, abi=abi)
 
                 self.current_balances_web3[exchange][token] = \
-                self._get_balance_for_wallet(exchange_address, token_obj, w3_obj)
+                    self._get_balance_for_wallet(exchange_add, token_obj, w3)
 
     def get_block_number(self) -> dict:
+        """Retrieve current block number in the Ethereum blockchain."""
 
         data = '{"jsonrpc":"2.0", "id":"1", "method": "eth_blockNumber"}'
         response = send_request(self.provider_url, data)
@@ -95,6 +105,10 @@ class ArbitrageAPI(object):
                 logging.exception('\n🚨 Check whether the request is valid.}')
 
     def get_token_balance(self, token, exchange) -> str:
+        """
+            Send a crafted request to retrieve a given token balance in a
+            a given exchanges.
+        """
 
         token_address = self.tokens_address[token]
         exchange_address = self.exchanges_address[exchange][2:]
@@ -114,6 +128,7 @@ class ArbitrageAPI(object):
             logging.error(f'\n🚨 Retrieved data is ill-formatted: {response}')
 
     def get_all_balances(self) -> None:
+        """Loop over supported exchanges and tokens to retrieve balance."""
 
         for exchange in self.exchanges_address.keys():
             self.current_balances[exchange] = {}
@@ -122,7 +137,11 @@ class ArbitrageAPI(object):
                 self.current_balances[exchange][token] = \
                     self.get_token_balance(token, exchange)
 
-    def _calculate_price_data(self, t1_balance, t2_balance, quatity) -> float:
+    def _calculate_price_data(self, t1_balance, t2_balance, quantity) -> float:
+        """
+            Calculate price and price effect for a given token and its pair
+            using the AMM constant product equation.
+        """
 
         CONSTANT_PRODUCT = t1_balance * t2_balance
         CURRENT_PRICE = t2_balance / t1_balance
@@ -132,13 +151,13 @@ class ArbitrageAPI(object):
         ###########################
 
         # 1) How much WETH needs to remain in balance to keep the constant
-        token1_balance_buy = CONSTANT_PRODUCT / (t2_balance + quatity)
+        token1_balance_buy = CONSTANT_PRODUCT / (t2_balance + quantity)
 
         # 2) How much WETH goes out to keep the constant
         t1_amount_out_buy = t1_balance - token1_balance_buy
 
         # 3) Buy price to reflect the balances change
-        buy_price = quatity / t1_amount_out_buy
+        buy_price = quantity / t1_amount_out_buy
 
         # 4) Difference of buy price to current price
         buy_impact = 1 - (CURRENT_PRICE / buy_price)
@@ -148,13 +167,13 @@ class ArbitrageAPI(object):
         ###########################
 
         # 1) How much DAI to keep the balances constant
-        token2_balance_buy = CONSTANT_PRODUCT / (t1_balance + quatity)
+        token2_balance_buy = CONSTANT_PRODUCT / (t1_balance + quantity)
 
         # 2) How much DAI goes out that constant
         t2_amount_out_buy = t2_balance + token2_balance_buy
 
         # 3) How the DAI balance reflects with the income WETH
-        token1_balance_sell = CONSTANT_PRODUCT / (t2_balance - quatity)
+        token1_balance_sell = CONSTANT_PRODUCT / (t2_balance - quantity)
 
         # 4) The proportion of WETH in the new balance:
         t1_amount_in_sell = t1_balance + token1_balance_sell
@@ -170,6 +189,7 @@ class ArbitrageAPI(object):
                 format_perc(sell_impact), CONSTANT_PRODUCT]
 
     def get_pair_prices(self, token1, token2, quantity) -> None:
+        """Loop over a token pair to get prices on supported exchanges."""
 
         self.get_all_balances()
 
@@ -206,6 +226,10 @@ class ArbitrageAPI(object):
                 })
 
     def _calculate_arbitrage_brute_force(self) -> None:
+        """
+            Brute force algorithm to calculate arbitrage with current
+            prices for a pair of tokens in the supported exchanges.
+        """
 
         win_buy_price = float('inf')
         win_sell_price = 0
@@ -242,6 +266,7 @@ class ArbitrageAPI(object):
             })
 
     def get_arbitrage(self, quantity, token1=None, token2=None):
+        """Get AMM arbitrage data for a given pair of tokens."""
 
         token1 = token1 or 'WETH'
         token2 = token2 or 'DAI'
@@ -250,6 +275,7 @@ class ArbitrageAPI(object):
         self._calculate_arbitrage_brute_force()
 
     def run_arbitrage_loop(self, runtime, quantity) -> None:
+        """Run arbitrage algorithm for a given runtime and quantity."""
 
         end = time.time() + float(runtime) * 60
 
