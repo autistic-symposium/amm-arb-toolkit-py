@@ -34,14 +34,10 @@ class ArbitrageAPI(object):
         self.current_balances_web3 = {}
         self.current_price_data = {}
         self.arbitrage_result = []
-        self.provider_url = None
-        self.w3_obj = None
-        self.result_dir = None
-        self.arbitrage_threshold = None
-        self.sleep_time = None
 
         self._load_config()
 
+    @classmethod
     def _load_config(self) -> None:
 
         load_dotenv(Path('.') / '.env')
@@ -64,27 +60,27 @@ class ArbitrageAPI(object):
         self.sleep_time = float(SLEEP_TIME)
         self.provider_url = craft_url(ALCHEMY_URL, ALCHEMY_API_KEY)
 
-    def _get_balance_for_wallet(self, wallet_address, token_obj) -> float:
+    def _get_balance_for_wallet(self, address, token_obj, w3_obj) -> float:
 
-        balance_wei = token_obj.functions.balanceOf(wallet_address).call()
-        return float(self.w3_obj.fromWei(balance_wei, 'ether'))
+        balance_wei = token_obj.functions.balanceOf(address).call()
+        return float(w3_obj.fromWei(balance_wei, 'ether'))
 
     def get_balance_through_web3_lib(self) -> None:
 
-        self.w3_obj = Web3(Web3.HTTPProvider(self.provider_url))
+        w3_obj = Web3(Web3.HTTPProvider(self.provider_url))
 
         for exchange, contract in self.exchanges_address.items():
             self.current_balances_web3[exchange] = {}
-            exchange_address = self.w3_obj.toChecksumAddress(contract)
+            exchange_address = w3_obj.toChecksumAddress(contract)
 
             for token, contract in self.tokens_address.items():
 
                 abi = open_abi(f'./docs/{token}-abi.json')
-                address = self.w3_obj.toChecksumAddress(contract)
-                token_obj = self.w3_obj.eth.contract(address=address, abi=abi)
+                address = w3_obj.toChecksumAddress(contract)
+                token_obj = w3_obj.eth.contract(address=address, abi=abi)
 
                 self.current_balances_web3[exchange][token] = \
-                    self._get_balance_for_wallet(exchange_address, token_obj)
+                self._get_balance_for_wallet(exchange_address, token_obj, w3_obj)
 
     def get_block_number(self) -> dict:
 
