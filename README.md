@@ -323,7 +323,7 @@ Results are saved into `results/<arbitrage_TIMESTAMP>.txt`.
 
 <br>
 
-Here is an sample of the results of this algorithm running for 100 minutes:
+Here is an sample of the results of this algorithm running for 100 minutes for trading 100 `WETH`:
 
 ```
 {'info': 'BUY for $3497.72 at SHEBASWAP and SELL for $3477.39 at SUSHISWAP', 'arbitrage': '20.33'}
