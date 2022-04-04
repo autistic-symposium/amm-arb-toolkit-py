@@ -227,29 +227,35 @@ class ArbitrageAPI(object):
 
     def _calculate_arbitrage_brute_force(self) -> None:
         """
-            Brute force algorithm to calculate arbitrage with current
-            prices for a pair of tokens in the supported exchanges.
+            Brute force algorithm to calculate arbitrage with the
+            current prices for a pair of tokens in the supported exchanges.
         """
 
-        buy_list = [[key, float(value['buy_price'])] for key, value \
-                            in self.current_price_data.items()]
-        sell_list = [[key, float(value['sell_price'])] for key, value \
+        price_info = []
+        data = [(exchange, data) for (exchange, data) \
                             in self.current_price_data.items()]
 
-        for buy_data in buy_list:
-            for sell_data in sell_list:
+        for exchange, data in self.current_price_data.items():
 
-                arbitrage = sell_data[1] - buy_data[1]
+            if 'buy_price' not in data.keys():
+                continue
+
+            price_info.append([exchange, float(data['buy_price']), \
+                                            float(data['sell_price'])])
+
+        for i, buy_data in enumerate(price_info):
+            for sell_data in price_info[:i] + price_info[i+1:]:
+
+                arbitrage = sell_data[2] - buy_data[1]
 
                 if arbitrage > 0.0:
                     self.arbitrage_result.append({
                         'buy_exchange': buy_data[0],
                         'sell_exchange': sell_data[0],
-                        'arbitrage': arbitrage,
+                        'arbitrage': format_price(arbitrage),
                         'buy_price': buy_data[1],
-                        'sell_price': sell_data[1]
+                        'sell_price': sell_data[2]
                     })
-
 
     def get_arbitrage(self, quantity, token1=None, token2=None):
         """Get AMM arbitrage data for a given pair of tokens."""
