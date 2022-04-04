@@ -138,7 +138,7 @@ def run_menu() -> None:
         runtime = args.loop[0]
         quantity = args.loop[1]
 
-        print(f'\n⏳ Running loop of {runtime} minutes for quantity {quantity}')
+        print(f'\n⏳ Running loop of {runtime} minute(s) for quantity {quantity}')
         api.run_arbitrage_loop(runtime, quantity)
         print(f'✅ Done. Results saved at {api.result_dir}.\n')
 
