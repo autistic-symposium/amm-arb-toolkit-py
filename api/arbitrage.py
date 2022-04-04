@@ -16,7 +16,7 @@ from api.util import hex_to_int, wei_to_eth, send_request, \
 
 class ArbitrageAPI(object):
 
-    def __init__(self) -> None:
+    def __init__(self):
 
         # Smart constracts for supoorted tokens
         self.tokens_address = {
@@ -41,7 +41,7 @@ class ArbitrageAPI(object):
         self._load_config()
 
     @classmethod
-    def _load_config(self) -> None:
+    def _load_config(cls) -> None:
         """Load and set enviroment variables."""
 
         load_dotenv(Path('.') / '.env')
@@ -58,11 +58,11 @@ class ArbitrageAPI(object):
                 and bool(MIN_HEALTHY_POOL) and bool(SLEEP_TIME)):
             raise Exception('🚨 Please add info to env file')
 
-        self.result_dir = RESULT_DIR
-        self.min_healthy_pool = MIN_HEALTHY_POOL
-        self.arbitrage_threshold = float(ARBITRAGE_THRESHOLD)
-        self.sleep_time = float(SLEEP_TIME)
-        self.provider_url = craft_url(ALCHEMY_URL, ALCHEMY_API_KEY)
+        cls.result_dir = RESULT_DIR
+        cls.min_healthy_pool = MIN_HEALTHY_POOL
+        cls.arbitrage_threshold = float(ARBITRAGE_THRESHOLD)
+        cls.sleep_time = float(SLEEP_TIME)
+        cls.provider_url = craft_url(ALCHEMY_URL, ALCHEMY_API_KEY)
 
     def _get_balance_for_wallet(self, address, token_obj, w3) -> float:
         """Return the balance in eth of a token in a wallet."""
@@ -124,7 +124,7 @@ class ArbitrageAPI(object):
         response = send_request(self.provider_url, data)
         try:
             return wei_to_eth(hex_to_int(response['result']))
-        except KeyError:
+        except TypeError:
             logging.error(f'\n🚨 Retrieved data is ill-formatted: {response}')
 
     def get_all_balances(self) -> None:
@@ -257,7 +257,7 @@ class ArbitrageAPI(object):
                         'sell_price': sell_data[2]
                     })
 
-    def get_arbitrage(self, quantity, token1=None, token2=None):
+    def get_arbitrage(self, quantity, token1=None, token2=None) -> None:
         """Get AMM arbitrage data for a given pair of tokens."""
 
         token1 = token1 or 'WETH'
