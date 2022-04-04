@@ -102,7 +102,7 @@ bdex -c
 
 <br>
 
-📝 TODO: Possible improvement for the future: We are crafting the checksum address string by hand without composing it by [Keccak-256 hashing the methods and parameters](https://docs.soliditylang.org/en/develop/abi-spec.html).
+💡 We are crafting the checksum address string by hand without directly [Keccak-256 hashing the methods and parameters](https://docs.soliditylang.org/en/develop/abi-spec.html).
 
 <br>
 
@@ -296,11 +296,7 @@ bdex -x QUANTITY
 
 
 <br>
-<br>
 
-
-
-📝 TODO: improve this algorithm by adding a node walking (graph solution).
 
 <br>
 
@@ -321,11 +317,47 @@ bdex -r MIN
 
 <br>
 
-Results are saved into `results/<LOCAL_TIME>.txt`.
+Results are saved into `results/<arbitrage_TIMESTAMP>.txt`.
 
 <br>
 
-📝 TODO: run the algorithm in several threads (if not running in a Docker container).
+Here is an sample of the results of this algorithm running for 100 minutes:
+
+```
+{'info': 'BUY for $3497.72 at SHEBASWAP and SELL for $3477.39 at SUSHISWAP', 'arbitrage': '20.33'}
+{'info': 'BUY for $3503.86 at SUSHISWAP and SELL for $3437.35 at SHEBASWAP', 'arbitrage': '66.51'}
+{'info': 'BUY for $3503.92 at SHEBASWAP and SELL for $3485.1 at SUSHISWAP', 'arbitrage': '18.82'}
+{'info': 'BUY for $3523.32 at UNISWAP and SELL for $3500.11 at SUSHISWAP', 'arbitrage': '23.21'}
+{'info': 'BUY for $3526.93 at SUSHISWAP and SELL for $3460.71 at SHEBASWAP', 'arbitrage': '66.22'}
+{'info': 'BUY for $3527.07 at SUSHISWAP and SELL for $3460.71 at SHEBASWAP', 'arbitrage': '66.36'}
+{'info': 'BUY for $3527.96 at SHEBASWAP and SELL for $3511.09 at SUSHISWAP', 'arbitrage': '16.87'}
+{'info': 'BUY for $3530.13 at SHEBASWAP and SELL for $3511.09 at SUSHISWAP', 'arbitrage': '19.04'}
+{'info': 'BUY for $3532.29 at SHEBASWAP and SELL for $3511.09 at SUSHISWAP', 'arbitrage': '21.20'}
+{'info': 'BUY for $3532.29 at SHEBASWAP and SELL for $3511.09 at SUSHISWAP', 'arbitrage': '21.20'}
+{'info': 'BUY for $3532.29 at SHEBASWAP and SELL for $3515.7 at SUSHISWAP', 'arbitrage': '16.59'}
+{'info': 'BUY for $3532.29 at SHEBASWAP and SELL for $3514.69 at SUSHISWAP', 'arbitrage': '17.60'}
+{'info': 'BUY for $3532.29 at SHEBASWAP and SELL for $3514.69 at SUSHISWAP', 'arbitrage': '17.60'}
+{'info': 'BUY for $3538.12 at UNISWAP and SELL for $3514.69 at SUSHISWAP', 'arbitrage': '23.43'}
+{'info': 'BUY for $3538.12 at UNISWAP and SELL for $3523.08 at SUSHISWAP', 'arbitrage': '15.04'}
+{'info': 'BUY for $3549.44 at SHEBASWAP and SELL for $3531.53 at SUSHISWAP', 'arbitrage': '17.91'}
+{'info': 'BUY for $3551.94 at UNISWAP and SELL for $3531.53 at SUSHISWAP', 'arbitrage': '20.41'}
+{'info': 'BUY for $3558.56 at SUSHISWAP and SELL for $3499.37 at SHEBASWAP', 'arbitrage': '59.19'}
+{'info': 'BUY for $3565.29 at SUSHISWAP and SELL for $3499.37 at SHEBASWAP', 'arbitrage': '65.92'}
+{'info': 'BUY for $3565.29 at SUSHISWAP and SELL for $3499.37 at SHEBASWAP', 'arbitrage': '65.92'}
+{'info': 'BUY for $3563.13 at UNISWAP and SELL for $3538.18 at SUSHISWAP', 'arbitrage': '24.95'}
+{'info': 'BUY for $3563.13 at UNISWAP and SELL for $3537.9 at SUSHISWAP', 'arbitrage': '25.23'}
+{'info': 'BUY for $3563.13 at UNISWAP and SELL for $3537.82 at SUSHISWAP', 'arbitrage': '25.31'}
+{'info': 'BUY for $3563.78 at UNISWAP and SELL for $3537.82 at SUSHISWAP', 'arbitrage': '25.96'}
+{'info': 'BUY for $3563.27 at UNISWAP and SELL for $3537.82 at SUSHISWAP', 'arbitrage': '25.45'}
+{'info': 'BUY for $3550.51 at UNISWAP and SELL for $3524.36 at SUSHISWAP', 'arbitrage': '26.15'}
+{'info': 'BUY for $3550.51 at UNISWAP and SELL for $3524.31 at SUSHISWAP', 'arbitrage': '26.20'}
+{'info': 'BUY for $3551.26 at SUSHISWAP and SELL for $3486.79 at SHEBASWAP', 'arbitrage': '64.47'}
+{'info': 'BUY for $3541.84 at SHEBASWAP and SELL for $3524.31 at SUSHISWAP', 'arbitrage': '17.53'}
+{'info': 'BUY for $3541.81 at SUSHISWAP and SELL for $3474.2 at SHEBASWAP', 'arbitrage': '67.61'}
+{'info': 'BUY for $3539.29 at UNISWAP and SELL for $3514.96 at SUSHISWAP', 'arbitrage': '24.33'}
+{'info': 'BUY for $3535.69 at SHEBASWAP and SELL for $3514.96 at SUSHISWAP', 'arbitrage': '20.73'}
+{'info': 'BUY for $3528.53 at SUSHISWAP and SELL for $3462.25 at SHEBASWAP', 'arbitrage': '66.28'}
+```
 
 <br>
 
@@ -343,7 +375,7 @@ Finally, run the container (in a separate terminal tab):
 docker run -v $(pwd):/results -it bdex sleep infinity
 ```
 
-Results are available at `results/<LOCAL_TIME>.txt`.
+Results are available at `results/<arbitrage_TIMESTAMP>.txt`.
 
 💡 You can inspect your container at any time with these commands:
 
@@ -361,10 +393,6 @@ docker volumes prune
 
 <br>
 
-
-📝 TODO: add a script to mount results and save on disk after finished running the script.
-
-<br>
 
 ---
 
