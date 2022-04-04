@@ -290,10 +290,34 @@ Run an algorithm to search for arbitrage in the supported exchanges for a certai
 bdex -x QUANTITY
 ```
 
+
 <br>
 
-<img width="538" alt="Screen Shot 2022-04-03 at 11 42 09 PM" src="https://user-images.githubusercontent.com/1130416/161447441-dd7126c9-b307-4ded-bbea-42c2a5e60edb.png">
+Arbitrage opportunies for 10 `WETH`:
 
+<br>
+<img width="495" alt="Screen Shot 2022-04-04 at 6 02 09 PM" src="https://user-images.githubusercontent.com/1130416/161561281-c49beaec-c0fe-4022-b323-a795b0ebb92a.png">
+
+
+<br>
+
+Arbitrage opportunies for 1 `WETH`:
+
+<br>
+
+<img width="464" alt="Screen Shot 2022-04-04 at 6 02 31 PM" src="https://user-images.githubusercontent.com/1130416/161561271-94c2c75f-fc27-48bc-a29f-a8b60a692585.png">
+
+<br>
+
+
+Arbitrage opportunies for 0.01 `WETH`:
+
+<br>
+<img width="507" alt="Screen Shot 2022-04-04 at 6 03 20 PM" src="https://user-images.githubusercontent.com/1130416/161561257-aab365b9-d04b-4754-948b-4f2894aeb03e.png">
+
+
+
+<br>
 
 
 <br>
