@@ -231,42 +231,25 @@ class ArbitrageAPI(object):
             prices for a pair of tokens in the supported exchanges.
         """
 
-        win_buy_price = float('inf')
-        win_sell_price = 0
-        win_buy_exchange = None
-        win_sell_exchange = None
-        results = []
+        buy_list = [[key, float(value['buy_price'])] for key, value \
+                            in self.current_price_data.items()]
+        sell_list = [[key, float(value['sell_price'])] for key, value \
+                            in self.current_price_data.items()]
 
-        for exchange, data in self.current_price_data.items():
+        for buy_data in buy_list:
+            for sell_data in sell_list:
 
-            if 'buy_price' not in data.keys():
-                continue
+                arbitrage = sell_data[1] - buy_data[1]
 
-            buy_price_here = float(data['buy_price'])
-            sell_price_here = float(data['sell_price'])
+                if arbitrage > 0.0:
+                    self.arbitrage_result.append({
+                        'buy_exchange': buy_data[0],
+                        'sell_exchange': sell_data[0],
+                        'arbitrage': arbitrage,
+                        'buy_price': buy_data[1],
+                        'sell_price': sell_data[1]
+                    })
 
-            if buy_price_here < win_buy_price:
-                win_buy_price = buy_price_here
-                win_buy_exchange = exchange
-                continue
-
-            if sell_price_here > win_sell_price:
-                win_sell_price = sell_price_here
-                win_sell_exchange = exchange
-                continue
-
-            arbitrage = win_buy_price - win_sell_price
-
-            if arbitrage > self.arbitrage_threshold and win_sell_exchange \
-                    is not None and win_buy_price is not None:
-                info_buy = f"BUY for ${win_buy_price} at {win_buy_exchange} and "
-                info_sell = f"SELL for ${win_sell_price} at {win_sell_exchange}"
-                results.append({
-                    'info': info_buy + info_sell,
-                    'arbitrage': format_price(arbitrage)
-                })
-
-        self.arbitrage_result = results
 
     def get_arbitrage(self, quantity, token1=None, token2=None):
         """Get AMM arbitrage data for a given pair of tokens."""

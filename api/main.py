@@ -123,11 +123,12 @@ def run_menu() -> None:
         quantity = args.arbitrage[0]
         api.get_arbitrage(quantity)
 
-        results = api.arbitrage_result.pop()
-        while results:
-            print(f'\n✅ Found these opportunities (qty: {quantity} WETH):\n')
-            print(f"🤑 Profit: ${results['arbitrage']} DAI")
-            print(f"   Details: {results['info']}\n")
+        if api.arbitrage_result:
+            for result in api.arbitrage_result:
+                print(f'\n✅ Found these opportunities (qty: {quantity} WETH):\n')
+                print(f"🤑 Profit: ${result['arbitrage']} DAI")
+                print(f"BUY ${result['buy_price']}: {result['buy_price']}")
+                print(f"SELL ${result['sell_price']}: {result['sell_price']}\n")
         else:
             print('\n😭 No arbitrage found.\n')
 
