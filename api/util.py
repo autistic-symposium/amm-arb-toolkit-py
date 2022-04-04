@@ -56,7 +56,7 @@ def open_abi(filepath) -> json:
 
 def format_perc(value) -> str:
     """Format a percentage float to a well-suitable string."""
-
+b
     return "%.8f%%" % (100 * value)
 
 

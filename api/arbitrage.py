@@ -235,6 +235,7 @@ class ArbitrageAPI(object):
         win_sell_price = 0
         win_buy_exchange = None
         win_sell_exchange = None
+        results = []
 
         for exchange, data in self.current_price_data.items():
 
@@ -254,16 +255,18 @@ class ArbitrageAPI(object):
                 win_sell_exchange = exchange
                 continue
 
-        arbitrage = win_buy_price - win_sell_price
+            arbitrage = win_buy_price - win_sell_price
 
-        if arbitrage > self.arbitrage_threshold and win_sell_exchange \
-                is not None and win_buy_price is not None:
-            info_buy = f"BUY for ${win_buy_price} at {win_buy_exchange} and "
-            info_sell = f"SELL for ${win_sell_price} at {win_sell_exchange}"
-            self.arbitrage_result.append({
-                'info': info_buy + info_sell,
-                'arbitrage': format_price(arbitrage)
-            })
+            if arbitrage > self.arbitrage_threshold and win_sell_exchange \
+                    is not None and win_buy_price is not None:
+                info_buy = f"BUY for ${win_buy_price} at {win_buy_exchange} and "
+                info_sell = f"SELL for ${win_sell_price} at {win_sell_exchange}"
+                results.append({
+                    'info': info_buy + info_sell,
+                    'arbitrage': format_price(arbitrage)
+                })
+
+        self.arbitrage_result = results
 
     def get_arbitrage(self, quantity, token1=None, token2=None):
         """Get AMM arbitrage data for a given pair of tokens."""
